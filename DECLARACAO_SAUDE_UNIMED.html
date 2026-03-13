@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Declaração de Saúde Unimed</title>
+<style>
+:root{--bg:#f8fafc;--panel:#fff;--line:#d7e2ef;--text:#0f172a;--muted:#64748b;--shadow:0 10px 28px rgba(15,23,42,.06);}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:transparent;color:var(--text)}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;outline:none}
+textarea{min-height:86px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.16)}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.section{padding:18px;border-top:1px solid #edf2f7}
+.section:first-child{border-top:none}
+.badge{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.unimed{background:#ecfdf5;color:#15803d}
+.badge.intermed{background:#fff7ed;color:#c2410c}
+.small{font-size:12px;color:var(--muted)}
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label{font-size:13px;font-weight:700;color:#334155}
+.question{padding:14px;border:1px solid #e2e8f0;border-radius:14px;background:#fbfdff}
+.question h4{margin:0 0 6px 0;font-size:14px}
+.question p{margin:0 0 10px 0;font-size:12px;color:var(--muted);line-height:1.45}
+.radio-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.radio-row label{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#334155}
+.radio-row input{width:auto}
+body{padding:14px}
+
+input[name="local"]{text-transform:uppercase}
+textarea[name="comentarios"]{text-transform:uppercase}
+textarea[name$="_obs"]{text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <span class="badge unimed">UNIMED</span>
+        <h2 style="margin:10px 0 4px 0">Declaração de Saúde</h2>
+        <p style="margin:0;color:var(--muted);font-size:13px">Formulário separado do index. Dados salvos por instância.</p>
+      </div>
+      <div class="small" id="instanceLabel"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 style="margin:0 0 10px 0">1. Dados do beneficiário</h3>
+    <div class="grid grid-2">
+      <div class="field"><label>Nome</label><input name="nome" type="text" maxlength="160"></div>
+      <div class="field"><label>Tipo de vínculo</label><select name="vinculo"><option value=""></option><option>TITULAR</option><option>DEPENDENTE</option></select></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 style="margin:0 0 10px 0">2. Aspectos gerais</h3>
+    <div class="grid grid-3">
+      <div class="field"><label>Data de nascimento</label><input name="dataNascimento" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" maxlength="10"></div>
+      <div class="field"><label>Peso (kg)</label><input name="peso" type="text" maxlength="12" inputmode="numeric" placeholder="Ex.: 72.50"></div>
+      <div class="field"><label>Altura</label><input name="altura" type="text" maxlength="3" inputmode="numeric" placeholder="Ex.: 172"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 style="margin:0 0 10px 0">3. Questionário de saúde</h3>
+    <div id="questionsMount" class="grid"></div>
+  </div>
+
+  <div class="section">
+    <h3 style="margin:0 0 10px 0">Comentários adicionais</h3>
+    <div class="field"><label>Informações complementares</label><textarea name="comentarios"></textarea></div>
+  </div>
+
+  <div class="section">
+    <h3 style="margin:0 0 10px 0">4. Médico orientador</h3>
+    <div class="grid grid-1">
+      <div class="field"><label>Presença de médico orientador</label><select name="medicoOrientadorOpcao" disabled><option>Não</option></select></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 style="margin:0 0 10px 0">5. Assinatura do beneficiário / responsável legal</h3>
+    <div class="grid grid-1">
+      <div class="field"><label>Local</label><input name="local" type="text" maxlength="120"></div>
+      <div class="field"><label>Nome do responsável legal</label><input name="responsavelNome" type="text" maxlength="160"></div>
+      <div class="field"><label>CPF do responsável legal</label><input name="responsavelCPF" type="text" maxlength="14" placeholder="000.000.000-00"></div>
+  </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [["q31", "3.1", "Doenças do Sistema Respiratório", "asma, bronquite, enfisema, desvio de septo, adenoide, sinusite, apneia do sono e outras."], ["q32", "3.2", "Doenças do Sistema Cardiovascular", "hipertensão arterial, doença coronariana, varizes, valvulopatias, insuficiência cardíaca, arritmias, cardiopatia congênita e outras."], ["q33", "3.3", "Doenças do Sistema Osteomuscular", "hérnia de disco, osteoporose, lesão de menisco e/ou ligamentos, bursite, artrite, artrose, gota, lúpus, tenosinovites, escoliose, lordose e outras."], ["q34", "3.4", "Doenças do Sistema Digestivo", "gastrite, úlcera, colite, cirrose hepática, hepatites, pancreatite, hérnia de hiato, hérnia umbilical, hérnia inguinal, pedra na vesícula, hemorroidas e outras."], ["q35", "3.5", "Doenças do Sistema Genito Urinário", "cólica renal, insuficiência renal, doenças da próstata, infertilidade, endometriose, mioma, cisto de ovário, infecção urinária e outras."], ["q36", "3.6", "Doenças do Sistema Neurológico", "mal de Parkinson, doença de Alzheimer, paralisia, sequela de derrame, esclerose múltipla, TEA, TDAH e outros."], ["q37", "3.7", "Doenças do Sistema Endócrino", "diabetes, hipertireoidismo, hipotireoidismo, obesidade, desnutrição e outras."], ["q38", "3.8", "Doenças infectocontagiosas", "AIDS/HIV, malária, tuberculose, doenças sexualmente transmissíveis e outras."], ["q39", "3.9", "Doenças psiquiátricas", "psicose, depressão e outras."], ["q310", "3.10", "Doenças cancerosas", "câncer de mama, próstata, pulmão, fígado, leucemia, intestino e outras."], ["q311", "3.11", "Doenças hematológicas", "anemia, hemofilia, trombocitopenia, trombofilias e outras."], ["q312", "3.12", "Doenças de pele e alérgicas", "nevus, hemangiomas, sinais, rinite, urticária, hiperidrose, psoríase, hidradenite supurativa, urticária crônica e outras."], ["q313", "3.13", "Doenças congênitas", "síndrome de down, má-formações e problemas relacionados como cardíaco, respiratório, visão, urinário, membros e outros."], ["q314", "3.14", "Doenças do ouvido", "surdez, otites, labirintite e outras."], ["q315", "3.15", "Doenças dos olhos", "hipermetropia, miopia e astigmatismo: informar grau e doença, quando houver."], ["q316", "3.16", "Uso de prótese ou órtese", "pinos, parafusos, placas, fios, silicone e outros. Informar se a indicação foi estética, motivo, localização, tempo e tratamento."], ["q317", "3.17", "Doenças do Sistema Imunológico", "lúpus, artrites, polimiosite, hepatite autoimune, tireoidites, vitiligo, esclerodermia e outras."], ["q318", "3.18", "Cirurgias realizadas", "especificar qual cirurgia, há quanto tempo, se existe sequela e qual a sequela."]];
+const OPERATOR_KEY = 'unimed';
+const instanceId = new URLSearchParams(location.search).get('instance') || '1';
+const storageKey = `ds_tabs_${OPERATOR_KEY}_${instanceId}`;
+document.getElementById('instanceLabel').textContent = `Instância ${instanceId}`;
+
+
+function maskDate(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,8);
+  if(v.length>4) input.value=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+  else if(v.length>2) input.value=v.slice(0,2)+'/'+v.slice(2);
+  else input.value=v;
+}
+function maskCpf(input) {
+  let v=input.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9) input.value=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6,9)+'-'+v.slice(9);
+  else if(v.length>6) input.value=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6);
+  else if(v.length>3) input.value=v.slice(0,3)+'.'+v.slice(3);
+  else input.value=v;
+}
+function upperPTBR(input) {
+  input.value = (input.value || '').toLocaleUpperCase('pt-BR');
+}
+function maskPeso(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,5);
+  if(!v) { input.value=''; return; }
+  const n = String(parseInt(v,10)).padStart(3,'0');
+  input.value = n.slice(0,-2) + '.' + n.slice(-2);
+}
+function maskAlturaCm(input) {
+  input.value = input.value.replace(/\D/g,'').slice(0,3);
+}
+function sanitizeEyeTyping(input) {
+  let v = String(input.value || '');
+  v = v.replace(/[^0-9,]/g, '');
+  const firstComma = v.indexOf(',');
+  if (firstComma !== -1) {
+    const intPart = v.slice(0, firstComma).replace(/,/g, '').slice(0, 2);
+    const decPart = v.slice(firstComma + 1).replace(/,/g, '').slice(0, 2);
+    v = intPart + ',' + decPart;
+  } else {
+    v = v.replace(/,/g, '').slice(0, 4);
+  }
+  input.value = v;
+}
+function maskEye(input){
+
+  let digits = input.value.replace(/\D/g,'').slice(0,4);
+
+  if(!digits){
+    input.value = '';
+    return;
+  }
+
+  if(digits.length === 1){
+    input.value = '0,0' + digits;
+    return;
+  }
+
+  if(digits.length === 2){
+    input.value = '0,' + digits;
+    return;
+  }
+
+  let intPart = digits.slice(0,-2).replace(/^0+/, '');
+  let decPart = digits.slice(-2);
+
+  if(intPart === '') intPart = '0';
+
+  input.value = intPart + ',' + decPart;
+
+}
+function updateQuestionDependencies() {
+  QUESTIONS.forEach(([key]) => {
+    const sim = document.querySelector(`input[name="${key}_resposta"][value="SIM"]`);
+    const obs = document.querySelector(`[name="${key}_obs"]`);
+    const allow = !!(sim && sim.checked);
+    if(obs){
+      obs.disabled = !allow;
+      if(!allow) obs.value = '';
+    }
+    if(key === 'q315'){
+      ['_olho_direito','_olho_esquerdo'].forEach(suf => {
+        const fld = document.querySelector(`[name="${key}${suf}"]`);
+        if(fld){
+          fld.disabled = !allow;
+          if(!allow) fld.value = '';
+        }
+      });
+    }
+  });
+}
+function resetLockedFields() {
+  const med = document.querySelector('[name="medicoOrientadorOpcao"]');
+  if(med) med.value = 'Não';
+  ['medicoNome','medicoCRM','medicoData','medicoAssinatura','dataLocal','responsavelData','beneficiarioAssinatura'].forEach(name=>{
+    const el=document.querySelector(`[name="${name}"]`);
+    if(el) el.value='';
+  });
+}
+function setupToggleRadios() {
+  document.querySelectorAll('.radio-row label').forEach(label => {
+    label.addEventListener('click', (e) => {
+      const radio = label.querySelector('input[type="radio"]');
+      if(!radio) return;
+      e.preventDefault();
+      const group = document.querySelectorAll(`input[type="radio"][name="${radio.name}"]`);
+      if(radio.checked){
+        radio.checked = false;
+      } else {
+        group.forEach(r => r.checked = false);
+        radio.checked = true;
+      }
+      updateQuestionDependencies();
+      persist();
+    });
+  });
+}
+function renderQuestions() {
+  const mount=document.getElementById('questionsMount');
+  mount.innerHTML=QUESTIONS.map(([key,code,title,hint])=>`
+    <div class="question">
+      <h4>${code} — ${title}</h4>
+      <p>${hint}</p>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Resposta</label>
+          <div class="radio-row">
+            <label><input type="radio" name="${key}_resposta" value="SIM"> SIM</label>
+            <label><input type="radio" name="${key}_resposta" value="NÃO"> NÃO</label>
+          </div>
+        </div>
+        ${key==='q315' ? `
+          <div class="grid grid-2">
+            <div class="field"><label>Olho direito</label><input name="${key}_olho_direito" type="text" maxlength="10" inputmode="numeric" placeholder="Ex.: 1,75" disabled></div>
+            <div class="field"><label>Olho esquerdo</label><input name="${key}_olho_esquerdo" type="text" maxlength="10" inputmode="numeric" placeholder="Ex.: 1,75" disabled></div>
+          </div>` : '<div></div>'}
+      </div>
+      <div class="field" style="margin-top:10px"><label>Observações</label><textarea name="${key}_obs" disabled></textarea></div>
+    </div>`).join('');
+}
+function readForm() {
+  const data={operator:OPERATOR_KEY,instanceId};
+  document.querySelectorAll('input,select,textarea').forEach(el=>{
+    if(el.type==='radio') { if(el.checked) data[el.name]=el.value; }
+    else data[el.name]=el.value||'';
+  });
+  return data;
+}
+function writeForm(data) {
+  if(!data) return;
+  document.querySelectorAll('input,select,textarea').forEach(el=>{
+    if(el.type==='radio') el.checked = data[el.name]===el.value;
+    else if(Object.prototype.hasOwnProperty.call(data, el.name)) el.value = data[el.name]||'';
+  });
+  resetLockedFields();
+  updateQuestionDependencies();
+}
+function persist() {
+  resetLockedFields();
+  updateQuestionDependencies();
+  const data = readForm();
+  sessionStorage.setItem(storageKey, JSON.stringify(data));
+  parent.postMessage({type:'ds-form-update', operator:OPERATOR_KEY, instanceId, data}, '*');
+}
+window.addEventListener('message', (ev) => {
+  if(ev.data?.type==='ds-clear-instance' && ev.data.operator===OPERATOR_KEY && String(ev.data.instanceId)===String(instanceId)) {
+    sessionStorage.removeItem(storageKey);
+    document.querySelectorAll('input,select,textarea').forEach(el=>{
+      if(el.type==='radio') el.checked=false;
+      else el.value='';
+    });
+    resetLockedFields();
+    updateQuestionDependencies();
+    persist();
+    return;
+  }
+  if(ev.data?.type==='ds-request-sync' && ev.data.operator===OPERATOR_KEY && String(ev.data.instanceId)===String(instanceId)) {
+    persist();
+    parent.postMessage({type:'ds-sync-done', operator:OPERATOR_KEY, instanceId}, '*');
+  }
+});
+
+renderQuestions();
+setupToggleRadios();
+
+document.querySelectorAll('input[placeholder="DD/MM/AAAA"]').forEach(i=>i.addEventListener('input',()=>maskDate(i)));
+document.querySelector('[name="responsavelCPF"]').addEventListener('input',e=>{ maskCpf(e.target); persist(); });
+document.querySelector('[name="peso"]').addEventListener('input',e=>{ maskPeso(e.target); persist(); });
+document.querySelector('[name="altura"]').addEventListener('input',e=>{ maskAlturaCm(e.target); persist(); });
+
+['nome','comentarios','responsavelNome'].forEach(name=>{
+  const el=document.querySelector(`[name="${name}"]`);
+  if(el) el.addEventListener('input', e=>{ upperPTBR(e.target); persist(); });
+});
+const localEl=document.querySelector('[name="local"]');
+if(localEl){
+  localEl.addEventListener('input', e=>{
+    upperPTBRLettersOnly(e.target);
+    persist();
+  });
+}
+
+
+document.querySelectorAll('textarea[name$="_obs"]').forEach(el=>{
+  el.addEventListener('input', e=>{ upperPTBR(e.target); persist(); });
+});
+
+
+document.querySelectorAll('[name$="_olho_direito"],[name$="_olho_esquerdo"]').forEach(el=>{
+  el.addEventListener('input', e=>{ maskEye(e.target); persist(); });
+});
+
+const saved = sessionStorage.getItem(storageKey);
+if(saved) { try{ writeForm(JSON.parse(saved)); }catch(e){} }
+resetLockedFields();
+updateQuestionDependencies();
+if(typeof localEl!=='undefined' && localEl) upperPTBRLettersOnly(localEl);
+const comentariosEl=document.querySelector('[name="comentarios"]');
+
+document.querySelectorAll('textarea[name$="_obs"]').forEach(el=>{
+  upperPTBR(el);
+});
+
+if(comentariosEl) upperPTBR(comentariosEl);
+['nome','responsavelNome'].forEach(name=>{
+  const el=document.querySelector(`[name="${name}"]`);
+  if(el) upperPTBR(el);
+});
+persist();
+document.addEventListener('input', persist);
+document.addEventListener('change', e => {
+  if(e.target.matches('input[type="radio"]')) updateQuestionDependencies();
+  persist();
+});
+
+</script>
+</body>
+</html>
