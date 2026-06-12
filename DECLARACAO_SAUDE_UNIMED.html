@@ -31,11 +31,28 @@ input:focus,select:focus,textarea:focus{border-color:#60a5fa;box-shadow:0 0 0 3p
 .radio-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .radio-row label{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#334155}
 .radio-row input{width:auto}
+
+/* v3 - campos automáticos/bloqueados e tabela CID */
+input[readonly], .locked-field {
+  background:#f1f5f9 !important;
+  color:#64748b !important;
+  border-color:#d7e2ef !important;
+  cursor:not-allowed;
+}
+.cid-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.cid-table th { font-size:12px; text-align:left; color:#334155; padding:6px 5px; }
+.cid-table td { padding:4px 5px; vertical-align:middle; }
+.cid-table .cid-col { width:11%; }
+.cid-table .desc-col { width:39%; }
+.cid-table input { padding:8px 9px; border-radius:8px; }
+
 body{padding:14px}
 
 input[name="local"]{text-transform:uppercase}
 textarea[name="comentarios"]{text-transform:uppercase}
 textarea[name$="_obs"]{text-transform:uppercase}
+
+input, textarea, select { font-weight: 700; }
 </style>
 </head>
 <body>
@@ -88,15 +105,37 @@ textarea[name$="_obs"]{text-transform:uppercase}
   <div class="section">
     <h3 style="margin:0 0 10px 0">5. Assinatura do beneficiário / responsável legal</h3>
     <div class="grid grid-1">
-      <div class="field"><label>Local</label><input name="local" type="text" maxlength="120"></div>
+      <div class="field"><label>Local</label><input name="local" type="text" maxlength="120" value="TERESINA" readonly></div>
       <div class="field"><label>Nome do responsável legal</label><input name="responsavelNome" type="text" maxlength="160"></div>
       <div class="field"><label>CPF do responsável legal</label><input name="responsavelCPF" type="text" maxlength="14" placeholder="000.000.000-00"></div>
   </div>
   </div>
+
+<div class="section">
+<h3>6. Termo de Comunicação ao Beneficiário</h3>
+<div class="grid grid-2">
+<div class="field"><label>Local</label><input name="termoLocal" value="TERESINA" readonly></div>
+<div class="field"><label>Beneficiário</label><input name="termoBeneficiario" readonly></div>
+</div>
+
+<h4>Tabela CID / Descrição</h4>
+<table class="cid-table">
+<colgroup>
+  <col class="cid-col"><col class="desc-col"><col class="cid-col"><col class="desc-col">
+</colgroup>
+<tr><th>CID</th><th>DESCRIÇÃO</th><th>CID</th><th>DESCRIÇÃO</th></tr>
+<tr><td><input name="cidE1" class="cid-input" maxlength="10"></td><td><input name="descE1" class="desc-input" maxlength="120"></td><td><input name="cidD1" class="cid-input" maxlength="10"></td><td><input name="descD1" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE2" class="cid-input" maxlength="10"></td><td><input name="descE2" class="desc-input" maxlength="120"></td><td><input name="cidD2" class="cid-input" maxlength="10"></td><td><input name="descD2" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE3" class="cid-input" maxlength="10"></td><td><input name="descE3" class="desc-input" maxlength="120"></td><td><input name="cidD3" class="cid-input" maxlength="10"></td><td><input name="descD3" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE4" class="cid-input" maxlength="10"></td><td><input name="descE4" class="desc-input" maxlength="120"></td><td><input name="cidD4" class="cid-input" maxlength="10"></td><td><input name="descD4" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE5" class="cid-input" maxlength="10"></td><td><input name="descE5" class="desc-input" maxlength="120"></td><td><input name="cidD5" class="cid-input" maxlength="10"></td><td><input name="descD5" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE6" class="cid-input" maxlength="10"></td><td><input name="descE6" class="desc-input" maxlength="120"></td><td><input name="cidD6" class="cid-input" maxlength="10"></td><td><input name="descD6" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE7" class="cid-input" maxlength="10"></td><td><input name="descE7" class="desc-input" maxlength="120"></td><td><input name="cidD7" class="cid-input" maxlength="10"></td><td><input name="descD7" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE8" class="cid-input" maxlength="10"></td><td><input name="descE8" class="desc-input" maxlength="120"></td><td><input name="cidD8" class="cid-input" maxlength="10"></td><td><input name="descD8" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE9" class="cid-input" maxlength="10"></td><td><input name="descE9" class="desc-input" maxlength="120"></td><td><input name="cidD9" class="cid-input" maxlength="10"></td><td><input name="descD9" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE10" class="cid-input" maxlength="10"></td><td><input name="descE10" class="desc-input" maxlength="120"></td><td><input name="cidD10" class="cid-input" maxlength="10"></td><td><input name="descD10" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE11" class="cid-input" maxlength="10"></td><td><input name="descE11" class="desc-input" maxlength="120"></td><td><input name="cidD11" class="cid-input" maxlength="10"></td><td><input name="descD11" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE12" class="cid-input" maxlength="10"></td><td><input name="descE12" class="desc-input" maxlength="120"></td><td><input name="cidD12" class="cid-input" maxlength="10"></td><td><input name="descD12" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE13" class="cid-input" maxlength="10"></td><td><input name="descE13" class="desc-input" maxlength="120"></td><td><input name="cidD13" class="cid-input" maxlength="10"></td><td><input name="descD13" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE14" class="cid-input" maxlength="10"></td><td><input name="descE14" class="desc-input" maxlength="120"></td><td><input name="cidD14" class="cid-input" maxlength="10"></td><td><input name="descD14" class="desc-input" maxlength="120"></td></tr><tr><td><input name="cidE15" class="cid-input" maxlength="10"></td><td><input name="descE15" class="desc-input" maxlength="120"></td><td><input name="cidD15" class="cid-input" maxlength="10"></td><td><input name="descD15" class="desc-input" maxlength="120"></td></tr>
+</table>
+<div class="grid grid-2" style="margin-top:12px">
+<div class="field"><label>CPF</label><input name="termoCPF" readonly></div>
+<div></div>
+<div class="field"><label>Nome do Médico</label><input name="termoMedico" maxlength="160"></div>
+<div class="field"><label>CRM</label><input name="termoCRM" maxlength="10" inputmode="numeric"></div>
+</div>
 </div>
 
 <script>
-const QUESTIONS = [["q31", "3.1", "Doenças do Sistema Respiratório", "asma, bronquite, enfisema, desvio de septo, adenoide, sinusite, apneia do sono e outras."], ["q32", "3.2", "Doenças do Sistema Cardiovascular", "hipertensão arterial, doença coronariana, varizes, valvulopatias, insuficiência cardíaca, arritmias, cardiopatia congênita e outras."], ["q33", "3.3", "Doenças do Sistema Osteomuscular", "hérnia de disco, osteoporose, lesão de menisco e/ou ligamentos, bursite, artrite, artrose, gota, lúpus, tenosinovites, escoliose, lordose e outras."], ["q34", "3.4", "Doenças do Sistema Digestivo", "gastrite, úlcera, colite, cirrose hepática, hepatites, pancreatite, hérnia de hiato, hérnia umbilical, hérnia inguinal, pedra na vesícula, hemorroidas e outras."], ["q35", "3.5", "Doenças do Sistema Genito Urinário", "cólica renal, insuficiência renal, doenças da próstata, infertilidade, endometriose, mioma, cisto de ovário, infecção urinária e outras."], ["q36", "3.6", "Doenças do Sistema Neurológico", "mal de Parkinson, doença de Alzheimer, paralisia, sequela de derrame, esclerose múltipla, TEA, TDAH e outros."], ["q37", "3.7", "Doenças do Sistema Endócrino", "diabetes, hipertireoidismo, hipotireoidismo, obesidade, desnutrição e outras."], ["q38", "3.8", "Doenças infectocontagiosas", "AIDS/HIV, malária, tuberculose, doenças sexualmente transmissíveis e outras."], ["q39", "3.9", "Doenças psiquiátricas", "psicose, depressão e outras."], ["q310", "3.10", "Doenças cancerosas", "câncer de mama, próstata, pulmão, fígado, leucemia, intestino e outras."], ["q311", "3.11", "Doenças hematológicas", "anemia, hemofilia, trombocitopenia, trombofilias e outras."], ["q312", "3.12", "Doenças de pele e alérgicas", "nevus, hemangiomas, sinais, rinite, urticária, hiperidrose, psoríase, hidradenite supurativa, urticária crônica e outras."], ["q313", "3.13", "Doenças congênitas", "síndrome de down, má-formações e problemas relacionados como cardíaco, respiratório, visão, urinário, membros e outros."], ["q314", "3.14", "Doenças do ouvido", "surdez, otites, labirintite e outras."], ["q315", "3.15", "Doenças dos olhos", "hipermetropia, miopia e astigmatismo: informar grau e doença, quando houver."], ["q316", "3.16", "Uso de prótese ou órtese", "pinos, parafusos, placas, fios, silicone e outros. Informar se a indicação foi estética, motivo, localização, tempo e tratamento."], ["q317", "3.17", "Doenças do Sistema Imunológico", "lúpus, artrites, polimiosite, hepatite autoimune, tireoidites, vitiligo, esclerodermia e outras."], ["q318", "3.18", "Cirurgias realizadas", "especificar qual cirurgia, há quanto tempo, se existe sequela e qual a sequela."]];
+const QUESTIONS = [["q31", "3.1", "Nasceu com alguma doença congênita?", "Doença cardíaca congênita, alterações ortopédicas congênitas, Síndrome de Down, alterações neurológicas congênitas, outras síndromes congênitas, outras patologias congênitas."], ["q32", "3.2", "Possui alguma doença cardiocirculatória?", "Hipertensão, arritmias, insuficiência cardíaca, marca-passo, ressincronizador, infarto, doença coronariana, aneurisma/AVC, valvulopatias (sopros cardíacos), varizes, cirurgia cardíaca, tromboses, CDI (cardiodesfibrilador implantável), uso de marca-passo cardíaco, uso de ressincronizador cardíaco, outras patologias."], ["q33", "3.3", "Possui doença endócrina e metabólica?", "Diabetes mellitus, hipo/hipertireoidismo, cisto/nódulo de tireoide, intolerância alimentar (glúten, lactose), artrite gotosa/gota, colesterol alto, obesidade, esteatose hepática (gordura no fígado), outras patologias."], ["q34", "3.4", "Possui doenças do sangue, imunológicas, do colágeno, autoimunes e infecciosas?", "Anemia, talassemias, HIV/Aids, tuberculose pulmonar, psoríase/artrite psoriática, doenças de coagulação, hemofilia, lúpus eritematoso sistêmico, esclerose múltipla, artrite reumatoide, espondilite anquilosante, esclerodermia, hepatites B/C, sequelas pelo Covid-19, vasculites, Síndrome de Sjögren, púrpuras trombocitopênica, polimiosite, outras patologias."], ["q35", "3.5", "Possui doenças do sistema nervoso e cerebrovasculares?", "Neuropatia periférica, Parkinson, hemiplegia, aneurisma cerebral, Mal de Alzheimer, cefaleia crônica/enxaqueca, paralisia cerebral, epilepsia, tumores cerebrais, doenças neuromusculares, doença congênita do sistema nervoso, nevralgia do trigêmeo, outras patologias."], ["q36", "3.6", "Possui doenças crônicas do aparelho respiratório?", "Asma brônquica, adenoides, apneia, tumor pulmonar, bronquite asmática, sinusite crônica, rinite, amígdalas aumentadas, tosse crônica (alérgica), enfisema pulmonar, desvio de septo, fibrose cística, outras patologias."], ["q37", "3.7", "Possui doenças ortopédicas?", "Artrose, osteoporose, desvio de coluna (escoliose/lordose/cifose), pé torto congênito, hérnia de disco, lombalgia/bico de papagaio/cervicalgia, lesões ligamentares, deformidades ósseas, lesão de tendão, sequelas cirúrgicas ortopédicas, hálux valgo (joanete), deformidade da coluna, outras patologias."], ["q38", "3.8", "Possui ou já teve neoplasia ou tumores malignos (câncer)?", "Leucemias, melanomas, câncer de colo de útero, mieloma múltiplo, linfoma Hodgkin, linfomas não Hodgkin, câncer de mama, câncer de próstata, carcinomas, outros tipos de câncer."], ["q39", "3.9", "Possui doenças do aparelho urinário ou reprodutor?", "Cálculo renal, insuficiência renal, incontinência urinária, tratamento por hemodiálise, endometriose, fimose, doenças de próstata, nódulos de mama, hidrocele, miomas, cistos ovarianos, varicocele, HPV, outras patologias."], ["q310", "3.10", "Possui doenças do aparelho digestivo?", "Úlcera gástrica, cálculos na vesícula biliar, pancreatite, refluxo gastroesofágico, cirrose hepática, intolerância à lactose, diarreia crônica, gastrite, hemorroidas, pólipos intestinais, hérnia inguinal, diverticulite, fissura anal, hérnia de hiato, doença de Crohn, retocolite ulcerativa, hepatites virais, doença celíaca, outras patologias."], ["q311", "3.11", "Possui doenças psiquiátricas?", "Depressão, transtorno do estresse pós-traumático, ansiedade, pânico, transtorno de ansiedade generalizado, TEPT, transtorno obsessivo-compulsivo (TOC), insônia, dependência química (álcool/entorpecentes), demência, síndrome de Burnout, transtornos alimentares (anorexia, bulimia, compulsão), borderline, esquizofrenia, transtorno bipolar, outras patologias."], ["q312", "3.12", "Possui algum transtorno do desenvolvimento?", "Transtorno do déficit de atenção e hiperatividade (TDAH), transtorno do espectro autista (TEA), transtorno de conduta e comportamento, deficiência intelectual (DI), atraso do desenvolvimento da fala e linguagem, transtorno opositivo desafiador (TOD), dislexia, outras patologias."], ["q313", "3.13", "Possui alguma doença de visão?", "Astigmatismo, glaucoma, estrabismo, pterígio, miopia, cegueira, ceratocone, ptose palpebral, catarata, uveíte, hipermetropia, outras patologias."], ["q314", "3.14", "Possui alguma doença da audição?", "Deficiência auditiva, colesteatoma, doenças do tímpano, otite crônica, labirintite, outras patologias."], ["q315", "3.15", "Possui alguma doença de pele?", "Hidradenite supurativa, acne, psoríase, vitiligo, dermatite atópica, alopecia areata, hiperidrose, cicatriz hipertrófica (quelóide), ceratose seborréica, urticária crônica, cisto pilonidal, outras patologias."], ["q316", "3.16", "Possui alguma alteração mandíbula, arcada dentária ou outras?", "Bruxismo, prognatismo, micrognatismo/retrognatismo, mordida cruzada, dentes inclusos, tumores, transtorno da ATM, fratura no maxilar/mandíbula, cirurgia ortognática, uso de aparelho ortodôntico, outras patologias."], ["q317", "3.17", "Faz uso de prótese(s) e/ou órtese(s)?", "Marcapasso, stent, próteses, pinos, silicone, placas/parafusos, outras patologias."], ["q318", "3.18", "Qualquer outra doença que não se encontre listada nos itens anteriores?", "Se sim, informe data do diagnóstico e doença."], ["q319", "3.19", "Está fazendo tratamento médico?", "Se sim, informe data do diagnóstico e doença."], ["q320", "3.20", "Já esteve ou está afastado de sua atividade profissional?", "Se sim, informe período e motivo."], ["q321", "3.21", "Já esteve internado ou realizou alguma cirurgia?", "Se sim, informe período, doença, tratamento e local."], ["q322", "3.22", "Já recebeu transplante de algum órgão?", "Se sim, informe qual."], ["q323", "3.23", "Já sofreu algum acidente?", "Se sim, informe data, parte acometida e sequelas, se houverem."], ["q324", "3.24", "Você já foi submetido a Transfusão Sanguínea, Radioterapia, Quimioterapia, Diálise?", "Se sim, informe período e motivo."], ["q325", "3.25", "Você possui condições especiais?", "Gestação (se sim, informe semanas de gestação), gestação de alto risco, limitação de locomoção decorrente de doença ou lesão, quaisquer outras condições especiais que não se encontrem listadas nos itens anteriores."]];
 const OPERATOR_KEY = 'unimed';
 const instanceId = new URLSearchParams(location.search).get('instance') || '1';
 const storageKey = `ds_tabs_${OPERATOR_KEY}_${instanceId}`;
@@ -118,6 +157,28 @@ function maskCpf(input) {
 }
 function upperPTBR(input) {
   input.value = (input.value || '').toLocaleUpperCase('pt-BR');
+}
+
+function upperPTBRLettersOnly(input) {
+  input.value = (input.value || '').replace(/[^A-Za-zÀ-ÿÇç\s]/g,'').toLocaleUpperCase('pt-BR');
+}
+function sanitizeCID(input) {
+  input.value = (input.value || '').replace(/[^A-Za-z0-9-]/g,'').toLocaleUpperCase('pt-BR');
+}
+function numbersOnly(input) {
+  input.value = (input.value || '').replace(/\D/g,'');
+}
+function syncTermoFields() {
+  const nomeRef = document.querySelector('[name="nome"]');
+  const cpfRef = document.querySelector('[name="responsavelCPF"]');
+  const localDecl = document.querySelector('[name="local"]');
+  const localTermo = document.querySelector('[name="termoLocal"]');
+  const beneficiarioTermo = document.querySelector('[name="termoBeneficiario"]');
+  const cpfTermo = document.querySelector('[name="termoCPF"]');
+  if(localDecl) localDecl.value = 'TERESINA';
+  if(localTermo) localTermo.value = 'TERESINA';
+  if(beneficiarioTermo && nomeRef) beneficiarioTermo.value = (nomeRef.value || '').toLocaleUpperCase('pt-BR');
+  if(cpfTermo && cpfRef) cpfTermo.value = cpfRef.value || '';
 }
 function maskPeso(input) {
   let v = input.value.replace(/\D/g,'').slice(0,5);
@@ -169,26 +230,12 @@ function maskEye(input){
 
 }
 function updateQuestionDependencies() {
-  QUESTIONS.forEach(([key]) => {
-    const sim = document.querySelector(`input[name="${key}_resposta"][value="SIM"]`);
-    const obs = document.querySelector(`[name="${key}_obs"]`);
-    const allow = !!(sim && sim.checked);
-    if(obs){
-      obs.disabled = !allow;
-      if(!allow) obs.value = '';
-    }
-    if(key === 'q315'){
-      ['_olho_direito','_olho_esquerdo'].forEach(suf => {
-        const fld = document.querySelector(`[name="${key}${suf}"]`);
-        if(fld){
-          fld.disabled = !allow;
-          if(!allow) fld.value = '';
-        }
-      });
-    }
+  document.querySelectorAll('textarea[name$="_obs"]').forEach(obs => {
+    obs.disabled = false;
   });
 }
 function resetLockedFields() {
+  syncTermoFields();
   const med = document.querySelector('[name="medicoOrientadorOpcao"]');
   if(med) med.value = 'Não';
   ['medicoNome','medicoCRM','medicoData','medicoAssinatura','dataLocal','responsavelData','beneficiarioAssinatura'].forEach(name=>{
@@ -228,13 +275,9 @@ function renderQuestions() {
             <label><input type="radio" name="${key}_resposta" value="NÃO"> NÃO</label>
           </div>
         </div>
-        ${key==='q315' ? `
-          <div class="grid grid-2">
-            <div class="field"><label>Olho direito</label><input name="${key}_olho_direito" type="text" maxlength="10" inputmode="numeric" placeholder="Ex.: 1,75" disabled></div>
-            <div class="field"><label>Olho esquerdo</label><input name="${key}_olho_esquerdo" type="text" maxlength="10" inputmode="numeric" placeholder="Ex.: 1,75" disabled></div>
-          </div>` : '<div></div>'}
+        <div></div>
       </div>
-      <div class="field" style="margin-top:10px"><label>Observações</label><textarea name="${key}_obs" disabled></textarea></div>
+      <div class="field" style="margin-top:10px"><label>Observações / Especificação</label><textarea name="${key}_obs"></textarea></div>
     </div>`).join('');
 }
 function readForm() {
@@ -252,9 +295,11 @@ function writeForm(data) {
     else if(Object.prototype.hasOwnProperty.call(data, el.name)) el.value = data[el.name]||'';
   });
   resetLockedFields();
+  syncTermoFields();
   updateQuestionDependencies();
 }
 function persist() {
+  syncTermoFields();
   resetLockedFields();
   updateQuestionDependencies();
   const data = readForm();
@@ -309,11 +354,24 @@ document.querySelectorAll('[name$="_olho_direito"],[name$="_olho_esquerdo"]').fo
   el.addEventListener('input', e=>{ maskEye(e.target); persist(); });
 });
 
+
+
+document.querySelectorAll('.cid-input').forEach(el=>{
+  el.addEventListener('input', e=>{ sanitizeCID(e.target); persist(); });
+});
+document.querySelectorAll('.desc-input').forEach(el=>{
+  el.addEventListener('input', e=>{ upperPTBR(e.target); persist(); });
+});
+const termoMedicoEl = document.querySelector('[name="termoMedico"]');
+if(termoMedicoEl) termoMedicoEl.addEventListener('input', e=>{ upperPTBR(e.target); persist(); });
+const termoCRMEl = document.querySelector('[name="termoCRM"]');
+if(termoCRMEl) termoCRMEl.addEventListener('input', e=>{ numbersOnly(e.target); persist(); });
+
 const saved = sessionStorage.getItem(storageKey);
 if(saved) { try{ writeForm(JSON.parse(saved)); }catch(e){} }
 resetLockedFields();
 updateQuestionDependencies();
-if(typeof localEl!=='undefined' && localEl) upperPTBRLettersOnly(localEl);
+if(typeof localEl!=='undefined' && localEl) localEl.value='TERESINA';
 const comentariosEl=document.querySelector('[name="comentarios"]');
 
 document.querySelectorAll('textarea[name$="_obs"]').forEach(el=>{
@@ -325,6 +383,11 @@ if(comentariosEl) upperPTBR(comentariosEl);
   const el=document.querySelector(`[name="${name}"]`);
   if(el) upperPTBR(el);
 });
+syncTermoFields();
+document.querySelectorAll('.cid-input').forEach(sanitizeCID);
+document.querySelectorAll('.desc-input').forEach(upperPTBR);
+if(termoMedicoEl) upperPTBR(termoMedicoEl);
+if(termoCRMEl) numbersOnly(termoCRMEl);
 persist();
 document.addEventListener('input', persist);
 document.addEventListener('change', e => {
@@ -332,6 +395,7 @@ document.addEventListener('change', e => {
   persist();
 });
 
+
+syncTermoFields();
 </script>
-</body>
-</html>
+
