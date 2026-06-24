@@ -80,8 +80,8 @@ input, textarea, select { font-weight: 700; }
     <h3 style="margin:0 0 10px 0">2. Aspectos gerais</h3>
     <div class="grid grid-3">
       <div class="field"><label>Data de nascimento</label><input name="dataNascimento" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" maxlength="10"></div>
-      <div class="field"><label>Peso (kg)</label><input name="peso" type="text" maxlength="12" inputmode="numeric" placeholder="Ex.: 72.50"></div>
-      <div class="field"><label>Altura</label><input name="altura" type="text" maxlength="3" inputmode="numeric" placeholder="Ex.: 172"></div>
+      <div class="field"><label>Peso (kg)</label><input name="peso" type="text" maxlength="12" inputmode="numeric" placeholder="Ex.: 72.500"></div>
+      <div class="field"><label>Altura</label><input name="altura" type="text" maxlength="3" inputmode="numeric" placeholder="Ex.: 170"></div>
     </div>
   </div>
 
@@ -181,10 +181,10 @@ function syncTermoFields() {
   if(cpfTermo && cpfRef) cpfTermo.value = cpfRef.value || '';
 }
 function maskPeso(input) {
-  let v = input.value.replace(/\D/g,'').slice(0,5);
+  let v = input.value.replace(/\D/g,'').slice(0,6);
   if(!v) { input.value=''; return; }
-  const n = String(parseInt(v,10)).padStart(3,'0');
-  input.value = n.slice(0,-2) + '.' + n.slice(-2);
+  const n = String(parseInt(v,10)).padStart(4,'0');
+  input.value = n.slice(0,-3) + '.' + n.slice(-3);
 }
 function maskAlturaCm(input) {
   input.value = input.value.replace(/\D/g,'').slice(0,3);
