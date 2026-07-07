@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Declaração de Saúde V8</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sistema Declaração de Saúde</title>
 <style>
 :root{--bg:#f4f7fb;--panel:#fff;--line:#d7e2ef;--text:#0f172a;--muted:#64748b;--blue:#2563eb;--green:#16a34a;--orange:#ea580c;--danger:#dc2626;--shadow:0 10px 28px rgba(15,23,42,.08)}
 *{box-sizing:border-box}
@@ -56,20 +57,6 @@ button{font:inherit;cursor:pointer}
 .mini-clear{background:#fef3c7;color:#92400e}
 .mini-blue{background:#dbeafe;color:#1d4ed8}
 .form-frame{width:100%;height:1220px;border:none;display:block;background:#f8fbff}
-.preview-body{background:#d8dde6;margin:0}
-.preview-wrap{padding:14px 0 40px}
-.doc-block{margin:0 0 26px 0}
-.doc-sep{display:none !important}
-.pdf-page{position:relative;width:210mm;height:297mm;margin:0 auto 14px auto;background:#fff;box-shadow:0 8px 30px rgba(15,23,42,.12);overflow:hidden}
-.pdf-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.overlay{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-.fill{position:absolute;color:#111827;font-size:12px;line-height:1.15;white-space:pre-wrap;word-break:break-word;min-height:18px;padding:1px 2px;box-sizing:border-boxfont-weight:700 !important;}
-.fill.small{font-size:11px}
-.fill.center{text-align:center}
-.fill.check{display:flex;align-items:center;justify-content:center;line-height:1.15;padding:1px 2px;box-sizing:border-boxfont-weight:900 !important;}
-.check{font-size:18px;font-weight:900}
-.empty-state{width:210mm;height:297mm;margin:0 auto;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 8px 30px rgba(15,23,42,.12);padding:30mm}
-@media print{@page{size:A4;margin:0}html,body{height:auto !important;overflow:visible !important}body{background:#fff}.preview-wrap{padding:0 !important;overflow:visible !important}.doc-block{margin:0 !important;padding:0 !important;break-inside:avoid}.pdf-page,.empty-state{margin:0 !important;box-shadow:none !important;page-break-after:always;break-after:page}.pdf-page:last-child,.empty-state:last-child{page-break-after:auto;break-after:auto}.doc-sep{display:none !important}}
 
 
 html,body{height:100%;overflow:hidden}
@@ -96,7 +83,6 @@ html,body{height:100%;overflow:hidden}
 .sidebar-operator-card .viz-btn:not([disabled]){background:#2563eb;color:#fff}
 
 
-/* V18 stronger selection visual */
 .sidebar-operator-card{transition:all .18s ease}
 .sidebar-operator-card .decl-btn,
 .sidebar-operator-card .viz-btn{transition:all .18s ease}
@@ -133,405 +119,97 @@ html,body{height:100%;overflow:hidden}
   box-shadow:none !important;
   opacity:1 !important;
 }
-</style>
 
-<script>
-(function(){
-  try{
-    const keys = [];
-    for(let i=0;i<sessionStorage.length;i++){ keys.push(sessionStorage.key(i)); }
-    keys.forEach(k => {
-      if(/^ds_tabs_/.test(k) || k === 'ds_tabs_system_state_v8'){
-        sessionStorage.removeItem(k);
-      }
-    });
-  }catch(e){}
-})();
-</script>
+
+/* toolbar fixa/visível para instâncias */
+.instance-toolbar-main{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin:10px 0 12px 0;
+}
+.sidebar-operator-card .decl-btn,
+.sidebar-operator-card .viz-btn{
+  pointer-events:auto !important;
+  opacity:1 !important;
+}
+.sidebar-operator-card.is-inactive .viz-btn,
+.sidebar-operator-card.is-inactive .viz-btn[disabled]{
+  background:#f3f4f6 !important;
+  color:#9ca3af !important;
+  border:2px solid #e5e7eb !important;
+  cursor:not-allowed !important;
+  box-shadow:none !important;
+}
+
+</style>
 
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="group-card card">
-      <div class="group-head">
-        <h3>Sistema Declaração de Saúde</h3>
-        <p>Index centraliza as funcionalidades. Os formulários ficam em HTMLs separados.</p>
-      </div>
-    </div>
-
-    <div class="group-card card sidebar-operator-card" id="card-unimed">
-      <div class="group-head">
-        <span class="badge unimed">UNIMED</span>
-        <h3 style="margin-top:10px">Declaração de Saúde Unimed</h3>
-        <p></p>
-      </div>
-      <div class="group-actions-stack">
-        <button class="btn decl-btn" data-op="unimed" onclick="showPanel('unimed')">DECLARAÇÃO UNIMED</button>
-        <button class="btn viz-btn" id="viz-unimed" data-op="unimed" onclick="visualize('unimed')">VISUALIZAR</button>
-      </div>
-    </div>
-
-    <div class="group-card card sidebar-operator-card" id="card-intermed">
-      <div class="group-head">
-        <span class="badge intermed">INTERMED</span>
-        <h3 style="margin-top:10px">Declaração de Saúde Intermed</h3>
-        <p></p>
-      </div>
-      <div class="group-actions-stack">
-        <button class="btn decl-btn" data-op="intermed" onclick="showPanel('intermed')">DECLARAÇÃO INTERMED</button>
-        <button class="btn viz-btn" id="viz-intermed" data-op="intermed" onclick="visualize('intermed')">VISUALIZAR</button>
-      </div>
-    </div>
-  </aside>
-
-  <main class="content">
-    <section id="panel-unimed" class="main-panel active"></section>
-    <section id="panel-intermed" class="main-panel"></section>
-  </main>
+<aside class="sidebar">
+<div class="group-card card">
+<div class="group-head">
+<h3>Sistema Declaração de Saúde</h3>
+<p>Preenchimento direto no PDF.</p>
+</div>
+</div>
+<div class="group-card card sidebar-operator-card is-active" id="card-unimed">
+<div class="group-head">
+<span class="badge unimed">UNIMED</span>
+<h3 style="margin-top:10px">Declaração de Saúde Unimed</h3>
+<p></p>
+</div>
+<div class="group-actions-stack">
+<button class="btn decl-btn" data-op="unimed" onclick="showPanel('unimed')">DECLARAÇÃO UNIMED</button>
+<button class="btn viz-btn" data-op="unimed" id="viz-unimed" onclick="visualize('unimed')" aria-disabled="false" title="Visualizar UNIMED">VISUALIZAR</button>
+</div>
+</div>
+<div class="group-card card sidebar-operator-card is-inactive" id="card-intermed">
+<div class="group-head">
+<span class="badge intermed">INTERMED</span>
+<h3 style="margin-top:10px">Declaração de Saúde Intermed</h3>
+<p></p>
+</div>
+<div class="group-actions-stack">
+<button class="btn decl-btn" data-op="intermed" onclick="showPanel('intermed')">DECLARAÇÃO INTERMED</button>
+<button class="btn viz-btn" data-op="intermed" id="viz-intermed" onclick="visualize('intermed')" disabled aria-disabled="true" title="Selecione a declaração INTERMED para visualizar">VISUALIZAR</button>
+</div>
+</div>
+</aside>
+<main class="content">
+<section class="main-panel active" id="panel-unimed">
+<div class="panel-top">
+<div><span class="badge unimed">UNIMED</span><h1>Declaração de Saúde Unimed</h1><p>Instâncias em abas</p></div>
+</div>
+<div class="instance-toolbar-main" id="toolbar-unimed">
+<button class="mini-btn mini-clear" data-action="clear" data-id="1" data-op="unimed" type="button">DEIXAR EM BRANCO</button>
+<button class="mini-btn mini-add" data-action="add" data-op="unimed" type="button">+ NOVA INSTÂNCIA</button>
+</div>
+<div class="workspace">
+<div class="tabs-bar" id="tabs-unimed"><button class="chrome-tab active" data-id="1" type="button">Instância 1<small>Em branco</small></button></div>
+<div class="tabs-content" id="panes-unimed"><div class="tab-pane active" data-id="1"><iframe class="form-frame" id="frame-unimed-1" src="DECLARACAO_SAUDE_UNIMED.html?operator=unimed&amp;instance=1"></iframe></div></div>
+</div>
+</section>
+<section class="main-panel" id="panel-intermed">
+<div class="panel-top">
+<div><span class="badge intermed">INTERMED</span><h1>Declaração de Saúde Intermed</h1><p>Instâncias em abas</p></div>
+</div>
+<div class="instance-toolbar-main" id="toolbar-intermed">
+<button class="mini-btn mini-clear" data-action="clear" data-id="1" data-op="intermed" type="button">DEIXAR EM BRANCO</button>
+<button class="mini-btn mini-add" data-action="add" data-op="intermed" type="button">+ NOVA INSTÂNCIA</button>
+</div>
+<div class="workspace">
+<div class="tabs-bar" id="tabs-intermed"><button class="chrome-tab active" data-id="1" type="button">Instância 1<small>Em branco</small></button></div>
+<div class="tabs-content" id="panes-intermed"><div class="tab-pane active" data-id="1"><iframe class="form-frame" id="frame-intermed-1" src="DECLARACAO_SAUDE_INTERMED.html?operator=intermed&amp;instance=1"></iframe></div></div>
+</div>
+</section>
+</main>
 </div>
 
-<script src="pdf_pages.js"></script>
-<script>
-const MAX_INSTANCES = 5;
-const META = {
-  unimed: { title:'Declaração de Saúde Unimed', file:'DECLARACAO_SAUDE_UNIMED.html', badge:'UNIMED', theme:'unimed' },
-  intermed: { title:'Declaração de Saúde Intermed', file:'DECLARACAO_SAUDE_INTERMED.html', badge:'INTERMED', theme:'intermed' }
-};
-const PDF_PAGES = window.DS_PDF_PAGES;
-let state = loadState();
-
-function loadState() {
-  return {
-    activePanel:'unimed',
-    counts:{unimed:1, intermed:1},
-    activeTabs:{unimed:1, intermed:1}
-  };
-}
-function saveState() {
-  sessionStorage.setItem('ds_tabs_system_state_v8', JSON.stringify(state));
-}
-function storageKey(op,id) {
-  return `ds_tabs_${op}_${id}`;
-}
-function readStored(op,id) {
-  try {
-    return JSON.parse(sessionStorage.getItem(storageKey(op,id)) || 'null');
-  } catch(e) {
-    return null;
-  }
-}
-function hasDataObj(data) {
-  if(!data) return false;
-  return Object.entries(data).some(([k,v]) => !['operator','instanceId'].includes(k) && String(v||'').trim() !== '');
-}
-function updateSidebarSelection() {
-  ['unimed','intermed'].forEach(op => {
-    const active = state.activePanel === op;
-    let card = document.getElementById(`card-${op}`);
-    if(!card){
-      const btn = document.querySelector(`.decl-btn[data-op="${op}"]`);
-      card = btn ? btn.closest('.sidebar-operator-card') : null;
-    }
-    const viz = document.getElementById(`viz-${op}`);
-    if(card){
-      card.classList.toggle('is-active', active);
-      card.classList.toggle('is-inactive', !active);
-    }
-    if(viz){
-      viz.disabled = !active;
-      viz.setAttribute('aria-disabled', String(!active));
-      viz.title = active ? '' : `Selecione ${META[op].badge} para visualizar`;
-    }
-  });
-}
-function showPanel(op) {
-  state.activePanel = op;
-  saveState();
-  document.querySelectorAll('.main-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById(`panel-${op}`).classList.add('active');
-  updateSidebarSelection();
-}
-function setActiveTab(op,id) {
-  state.activeTabs[op] = id;
-  saveState();
-  buildWorkspace(op);
-  showPanel(op);
-}
-function syncActiveTab(op) {
-  const activeId = state.activeTabs[op] || 1;
-  document.querySelectorAll(`#panel-${op} .chrome-tab`).forEach(btn => {
-    btn.classList.toggle('active', Number(btn.dataset.id) === Number(activeId));
-  });
-  document.querySelectorAll(`#panel-${op} .tab-pane`).forEach(pane => {
-    pane.classList.toggle('active', Number(pane.dataset.id) === Number(activeId));
-  });
-}
-function buildWorkspace(op) {
-  const panel = document.getElementById(`panel-${op}`);
-  const activeId = state.activeTabs[op] || 1;
-  panel.innerHTML = `
-    <div class="panel-top">
-      <div>
-        <span class="badge ${META[op].theme}">${META[op].badge}</span>
-        <h1>${META[op].title}</h1>
-        <p>Instâncias em abas</p>
-      </div>
-      <div class="panel-top-actions">
-        <button class="mini-btn mini-clear" onclick="clearInstance('${op}', ${activeId})">Deixar em branco</button>
-        <button class="mini-btn mini-add" onclick="addInstance('${op}')">+ Adicionar Instância</button>
-      </div>
-    </div>
-    <div class="workspace">
-      <div class="tabs-bar" id="tabs-${op}"></div>
-      <div class="tabs-content" id="panes-${op}"></div>
-    </div>`;
-  buildTabsAndPanes(op);
-}
-function buildTabsAndPanes(op) {
-  const tabsWrap = document.getElementById(`tabs-${op}`);
-  const panesWrap = document.getElementById(`panes-${op}`);
-  tabsWrap.innerHTML = '';
-  panesWrap.innerHTML = '';
-  for(let i=1;i<=state.counts[op];i++) {
-    const hasData = hasDataObj(readStored(op,i));
-    const tab = document.createElement('button');
-    tab.className = `chrome-tab ${hasData ? 'has-data' : ''}`;
-    tab.dataset.id = i;
-    tab.innerHTML = `Instância ${i}<small>${hasData ? 'Preenchida' : 'Em branco'}</small><button class="tab-close" type="button" ${state.counts[op]===1 ? 'disabled' : ''} onclick="event.stopPropagation(); closeInstance('${op}', ${i})">×</button>`;
-    tab.onclick = () => setActiveTab(op, i);
-    tabsWrap.appendChild(tab);
-
-    const pane = document.createElement('div');
-    pane.className = 'tab-pane';
-    pane.dataset.id = i;
-    pane.innerHTML = `
-      <iframe class="form-frame" id="frame-${op}-${i}" src="${META[op].file}?instance=${i}"></iframe>`;
-    panesWrap.appendChild(pane);
-  }
-  if((state.activeTabs[op] || 1) > state.counts[op]) state.activeTabs[op] = state.counts[op];
-  syncActiveTab(op);
-}
-function refreshTabIndicators(op) {
-  document.querySelectorAll(`#panel-${op} .chrome-tab`).forEach(tab => {
-    const id = Number(tab.dataset.id);
-    const filled = hasDataObj(readStored(op, id));
-    tab.classList.toggle('has-data', filled);
-    const small = tab.querySelector('small');
-    if(small) small.textContent = filled ? 'Preenchida' : 'Em branco';
-  });
-}
-function addInstance(op) {
-  if(state.counts[op] >= MAX_INSTANCES) return;
-  state.counts[op] += 1;
-  state.activeTabs[op] = state.counts[op];
-  saveState();
-  buildWorkspace(op);
-  showPanel(op);
-}
-function closeInstance(op,id) {
-  if(state.counts[op] <= 1) return;
-  for(let i=id;i<state.counts[op];i++) {
-    const next = sessionStorage.getItem(storageKey(op, i + 1));
-    if(next === null) sessionStorage.removeItem(storageKey(op, i));
-    else sessionStorage.setItem(storageKey(op, i), next);
-  }
-  sessionStorage.removeItem(storageKey(op, state.counts[op]));
-  state.counts[op] -= 1;
-  if(state.activeTabs[op] === id) state.activeTabs[op] = Math.max(1, id - 1);
-  else if(state.activeTabs[op] > id) state.activeTabs[op] -= 1;
-  saveState();
-  buildWorkspace(op);
-  showPanel(op);
-}
-function clearInstance(op,id) {
-  sessionStorage.removeItem(storageKey(op,id));
-  const frame = document.getElementById(`frame-${op}-${id}`);
-  try {
-    frame.contentWindow.postMessage({type:'ds-clear-instance', operator:op, instanceId:id}, '*');
-  } catch(e) {}
-  setTimeout(()=>refreshTabIndicators(op), 30);
-}
-
-window.addEventListener('message', (ev) => {
-  if(ev.data?.type === 'ds-form-update') {
-    sessionStorage.setItem(storageKey(ev.data.operator, ev.data.instanceId), JSON.stringify(ev.data.data || {}));
-    refreshTabIndicators(ev.data.operator);
-  }
-});
-
-const OVERLAY_SCHEMAS = {"unimed": {"operator": "generic", "pages": 7, "fields": [{"key": "vinculo_titular_check", "label": "Vínculo TITULAR", "page": 1, "x": 152.65, "y": 41.8, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "vinculo", "equals": "TITULAR"}, "unit": "mm"}, {"key": "vinculo_dependente_check", "label": "Vínculo DEPENDENTE", "page": 1, "x": 167.6, "y": 41.8, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "vinculo", "equals": "DEPENDENTE"}, "unit": "mm"}, {"key": "nome", "label": "Nome", "page": 1, "x": 28.66, "y": 42.85, "w": 120, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "dataNascimento", "label": "Data de nascimento", "page": 2, "x": 19.45, "y": 46.64, "w": 43.2, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "peso", "label": "Peso", "page": 2, "x": 64.38, "y": 46.64, "w": 66.5, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "altura", "label": "Altura", "page": 2, "x": 132.43, "y": 46.64, "w": 65.6, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "q31_sim_check", "label": "SQ31", "page": 2, "x": 165.1, "y": 102.79, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q31_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q31_nao_check", "label": "NQ31", "page": 2, "x": 184.3, "y": 102.79, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q31_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q31_obs", "label": "Obs Q31", "page": 2, "x": 65, "y": 124.2, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q32_sim_check", "label": "SQ32", "page": 2, "x": 165.1, "y": 126.79, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q32_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q32_nao_check", "label": "NQ32", "page": 2, "x": 184.3, "y": 126.79, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q32_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q32_obs", "label": "Obs Q32", "page": 2, "x": 65, "y": 149.79, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q33_sim_check", "label": "SQ33", "page": 2, "x": 165.1, "y": 152.33, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q33_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q33_nao_check", "label": "NQ33", "page": 2, "x": 184.3, "y": 152.33, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q33_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q33_obs", "label": "Obs Q33", "page": 2, "x": 65, "y": 171.35, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q34_sim_check", "label": "SQ34", "page": 2, "x": 165.1, "y": 174.04, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q34_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q34_nao_check", "label": "NQ34", "page": 2, "x": 184.3, "y": 174.04, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q34_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q34_obs", "label": "Obs Q34", "page": 2, "x": 65, "y": 201.41, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q35_sim_check", "label": "SQ35", "page": 2, "x": 165.1, "y": 203.9, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q35_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q35_nao_check", "label": "NQ35", "page": 2, "x": 184.3, "y": 203.9, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q35_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q35_obs", "label": "Obs Q35", "page": 2, "x": 65, "y": 226.63, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q36_sim_check", "label": "SQ36", "page": 2, "x": 165.1, "y": 228.9, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q36_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q36_nao_check", "label": "NQ36", "page": 2, "x": 184.3, "y": 228.9, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q36_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q36_obs", "label": "Obs Q36", "page": 2, "x": 65, "y": 247.78, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q37_sim_check", "label": "SQ37", "page": 3, "x": 165.1, "y": 22.7, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q37_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q37_nao_check", "label": "NQ37", "page": 3, "x": 184.5, "y": 22.7, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q37_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q37_obs", "label": "Obs Q37", "page": 3, "x": 65, "y": 45.47, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q38_sim_check", "label": "SQ38", "page": 3, "x": 165.1, "y": 47.92, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q38_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q38_nao_check", "label": "NQ38", "page": 3, "x": 184.5, "y": 47.92, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q38_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q38_obs", "label": "Obs Q38", "page": 3, "x": 65, "y": 67.38, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q39_sim_check", "label": "SQ39", "page": 3, "x": 165.1, "y": 69.83, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q39_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q39_nao_check", "label": "NQ39", "page": 3, "x": 184.5, "y": 69.83, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q39_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q39_obs", "label": "Obs Q39", "page": 3, "x": 65, "y": 88.44, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q310_sim_check", "label": "SQ310", "page": 3, "x": 165.1, "y": 90.99, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q310_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q310_nao_check", "label": "NQ310", "page": 3, "x": 184.5, "y": 90.99, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q310_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q310_obs", "label": "Obs Q310", "page": 3, "x": 65, "y": 113.46, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q311_sim_check", "label": "SQ311", "page": 3, "x": 165.1, "y": 115.89, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q311_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q311_nao_check", "label": "NQ311", "page": 3, "x": 184.5, "y": 115.89, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q311_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q311_obs", "label": "Obs Q311", "page": 3, "x": 65, "y": 143.51, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q312_sim_check", "label": "SQ312", "page": 3, "x": 165.1, "y": 145.98, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q312_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q312_nao_check", "label": "NQ312", "page": 3, "x": 184.5, "y": 145.98, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q312_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q312_obs", "label": "Obs Q312", "page": 3, "x": 65, "y": 168.73, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q313_sim_check", "label": "SQ313", "page": 3, "x": 165.1, "y": 171.07, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q313_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q313_nao_check", "label": "NQ313", "page": 3, "x": 184.5, "y": 171.07, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q313_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q315_olho_esquerdo", "label": "Olho esquerdo", "page": 3, "x": 119.7, "y": 180.85, "w": 23.52, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q315_olho_direito", "label": "Olho direito", "page": 3, "x": 143.42, "y": 180.85, "w": 23.52, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q313_obs", "label": "Obs Q313", "page": 3, "x": 65, "y": 188.36, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q314_sim_check", "label": "SQ314", "page": 3, "x": 165.1, "y": 190.6, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q314_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q314_nao_check", "label": "NQ314", "page": 3, "x": 184.5, "y": 190.6, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q314_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q314_obs", "label": "Obs Q314", "page": 3, "x": 65, "y": 205.3, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q315_sim_check", "label": "SQ315", "page": 3, "x": 165.1, "y": 207.73, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q315_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q315_nao_check", "label": "NQ315", "page": 3, "x": 184.5, "y": 207.73, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q315_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q315_obs", "label": "Obs Q315", "page": 3, "x": 65, "y": 227.43, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q316_sim_check", "label": "SQ316", "page": 3, "x": 165.1, "y": 229.77, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q316_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q316_nao_check", "label": "NQ316", "page": 3, "x": 184.5, "y": 229.77, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q316_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q316_obs", "label": "Obs Q316", "page": 3, "x": 65, "y": 249.67, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q317_sim_check", "label": "SQ317", "page": 4, "x": 165.1, "y": 22.68, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q317_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q317_nao_check", "label": "NQ317", "page": 4, "x": 184.5, "y": 22.68, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q317_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q317_obs", "label": "Obs Q317", "page": 4, "x": 65, "y": 35.92, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q318_sim_check", "label": "SQ318", "page": 4, "x": 165.1, "y": 38.46, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q318_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q318_nao_check", "label": "NQ318", "page": 4, "x": 184.5, "y": 38.46, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q318_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q318_obs", "label": "Obs Q318", "page": 4, "x": 65, "y": 53.09, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q319_sim_check", "label": "3.19 SIM", "page": 4, "x": 165.1, "y": 55.5, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q319_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q319_nao_check", "label": "3.19 NÃO", "page": 4, "x": 184.5, "y": 55.5, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q319_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q319_obs", "label": "3.19 Observação", "page": 4, "x": 65, "y": 65.87, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q320_sim_check", "label": "3.20 SIM", "page": 4, "x": 165.1, "y": 68.2, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q320_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q320_nao_check", "label": "3.20 NÃO", "page": 4, "x": 184.5, "y": 68.2, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q320_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q320_obs", "label": "3.20 Observação", "page": 4, "x": 65, "y": 78.78, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q321_sim_check", "label": "3.21 SIM", "page": 4, "x": 165.1, "y": 81.3, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q321_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q321_nao_check", "label": "3.21 NÃO", "page": 4, "x": 184.5, "y": 81.3, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q321_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q321_obs", "label": "3.21 Observação", "page": 4, "x": 65, "y": 94.78, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q322_sim_check", "label": "3.22 SIM", "page": 4, "x": 165.1, "y": 97.2, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q322_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q322_nao_check", "label": "3.22 NÃO", "page": 4, "x": 184.5, "y": 97.2, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q322_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q322_obs", "label": "3.22 Observação", "page": 4, "x": 65, "y": 106.32, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q323_sim_check", "label": "3.23 SIM", "page": 4, "x": 165.1, "y": 108.7, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q323_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q323_nao_check", "label": "3.23 NÃO", "page": 4, "x": 184.5, "y": 108.7, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q323_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q323_obs", "label": "3.23 Observação", "page": 4, "x": 65, "y": 119.23, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q324_sim_check", "label": "3.24 SIM", "page": 4, "x": 165.1, "y": 121.8, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q324_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q324_nao_check", "label": "3.24 NÃO", "page": 4, "x": 184.5, "y": 121.8, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q324_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q324_obs", "label": "3.24 Observação", "page": 4, "x": 65, "y": 132.14, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q325_sim_check", "label": "3.25 SIM", "page": 4, "x": 165.1, "y": 134.6, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q325_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q325_nao_check", "label": "3.25 NÃO", "page": 4, "x": 184.5, "y": 134.6, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q325_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q325_obs", "label": "3.25 Observação", "page": 4, "x": 65, "y": 154.54, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "comentarios", "label": "Comentários", "page": 4, "x": 20.49, "y": 179.17, "w": 177.5, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "medicoNome", "label": "Nome médico", "page": 4, "x": 114.82, "y": 198.48, "w": 82.5, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "medico_unimed_check", "label": "Médico Unimed", "page": 4, "x": 21.16, "y": 202.69, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "medicoOrientadorOpcao", "equals": "Sim, médico da operadora"}, "unit": "mm"}, {"key": "medico_particular_check", "label": "Médico Particular", "page": 4, "x": 21.16, "y": 207.58, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "medicoOrientadorOpcao", "equals": "Sim, médico particular de minha escolha"}, "unit": "mm"}, {"key": "medicoCRM", "label": "CRM", "page": 4, "x": 114.83, "y": 209, "w": 41.2, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "medicoData", "label": "Data médico", "page": 4, "x": 159.33, "y": 209, "w": 37.6, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "medico_nao_check", "label": "Médico Não", "page": 4, "x": 21.16, "y": 212.18, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "medicoOrientadorOpcao", "equals": "Não"}, "unit": "mm"}, {"key": "medicoAssinatura", "label": "Assinatura médico", "page": 4, "x": 114.9, "y": 220.39, "w": 82, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "local", "label": "Local", "page": 5, "x": 19.72, "y": 130.15, "w": 66.3, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "responsavelData", "label": "Data local", "page": 5, "x": 88.39, "y": 130.22, "w": 65.4, "fs": 15, "type": "text", "when": null, "unit": "mm"}, {"key": "responsavelNome", "label": "Nome responsável", "page": 5, "x": 29.7, "y": 169.05, "w": 112, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "responsavelCPF", "label": "CPF responsável", "page": 5, "x": 27.3, "y": 173.98, "w": 70.08, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "termoData", "label": "Termo - Data", "page": 6, "x": 112.38, "y": 42.02, "w": 67.2, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "termoLocal", "label": "Termo - Local", "page": 6, "x": 54.06, "y": 42.09, "w": 56, "fs": 14, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "termoBeneficiario", "label": "Termo - Beneficiário", "page": 6, "x": 29.68, "y": 63.27, "w": 148, "fs": 12, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "cidE1", "label": "CID E1", "page": 6, "x": 11.16, "y": 102.33, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE1", "label": "Descrição E1", "page": 6, "x": 26.95, "y": 102.33, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD1", "label": "CID D1", "page": 6, "x": 99.8, "y": 102.33, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD1", "label": "Descrição D1", "page": 6, "x": 117.13, "y": 102.33, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE2", "label": "CID E2", "page": 6, "x": 11.16, "y": 106.96, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE2", "label": "Descrição E2", "page": 6, "x": 26.95, "y": 106.96, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD2", "label": "CID D2", "page": 6, "x": 99.8, "y": 106.96, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD2", "label": "Descrição D2", "page": 6, "x": 117.13, "y": 106.96, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE3", "label": "CID E3", "page": 6, "x": 11.16, "y": 111.59, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE3", "label": "Descrição E3", "page": 6, "x": 26.95, "y": 111.59, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD3", "label": "CID D3", "page": 6, "x": 99.8, "y": 111.59, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD3", "label": "Descrição D3", "page": 6, "x": 117.13, "y": 111.59, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE4", "label": "CID E4", "page": 6, "x": 11.16, "y": 116.38, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE4", "label": "Descrição E4", "page": 6, "x": 26.95, "y": 116.38, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD4", "label": "CID D4", "page": 6, "x": 99.8, "y": 116.38, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD4", "label": "Descrição D4", "page": 6, "x": 117.13, "y": 116.38, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE5", "label": "CID E5", "page": 6, "x": 11.16, "y": 121.11, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE5", "label": "Descrição E5", "page": 6, "x": 26.95, "y": 121.11, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD5", "label": "CID D5", "page": 6, "x": 99.8, "y": 121.11, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD5", "label": "Descrição D5", "page": 6, "x": 117.13, "y": 121.11, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE6", "label": "CID E6", "page": 6, "x": 11.16, "y": 125.64, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE6", "label": "Descrição E6", "page": 6, "x": 26.95, "y": 125.64, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD6", "label": "CID D6", "page": 6, "x": 99.8, "y": 125.64, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD6", "label": "Descrição D6", "page": 6, "x": 117.13, "y": 125.64, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE7", "label": "CID E7", "page": 6, "x": 11.16, "y": 130.37, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE7", "label": "Descrição E7", "page": 6, "x": 26.95, "y": 130.37, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD7", "label": "CID D7", "page": 6, "x": 99.8, "y": 130.37, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD7", "label": "Descrição D7", "page": 6, "x": 116.63, "y": 130.37, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE8", "label": "CID E8", "page": 6, "x": 11.16, "y": 134.6, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE8", "label": "Descrição E8", "page": 6, "x": 26.95, "y": 134.6, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD8", "label": "CID D8", "page": 6, "x": 99.8, "y": 134.6, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD8", "label": "Descrição D8", "page": 6, "x": 117.13, "y": 134.6, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE9", "label": "CID E9", "page": 6, "x": 11.16, "y": 139.33, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE9", "label": "Descrição E9", "page": 6, "x": 26.95, "y": 139.33, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD9", "label": "CID D9", "page": 6, "x": 99.8, "y": 139.33, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD9", "label": "Descrição D9", "page": 6, "x": 117.13, "y": 139.33, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE10", "label": "CID E10", "page": 6, "x": 11.16, "y": 144.06, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE10", "label": "Descrição E10", "page": 6, "x": 26.95, "y": 144.06, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD10", "label": "CID D10", "page": 6, "x": 99.8, "y": 144.06, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD10", "label": "Descrição D10", "page": 6, "x": 117.13, "y": 144.06, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE11", "label": "CID E11", "page": 6, "x": 11.16, "y": 148.89, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE11", "label": "Descrição E11", "page": 6, "x": 26.95, "y": 148.89, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD11", "label": "CID D11", "page": 6, "x": 99.8, "y": 148.89, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD11", "label": "Descrição D11", "page": 6, "x": 117.13, "y": 148.89, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE12", "label": "CID E12", "page": 6, "x": 11.16, "y": 153.62, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE12", "label": "Descrição E12", "page": 6, "x": 26.95, "y": 153.62, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD12", "label": "CID D12", "page": 6, "x": 99.8, "y": 153.62, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD12", "label": "Descrição D12", "page": 6, "x": 117.13, "y": 153.62, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE13", "label": "CID E13", "page": 6, "x": 11.16, "y": 158.35, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE13", "label": "Descrição E13", "page": 6, "x": 26.95, "y": 158.35, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD13", "label": "CID D13", "page": 6, "x": 99.8, "y": 158.35, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD13", "label": "Descrição D13", "page": 6, "x": 117.13, "y": 158.35, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE14", "label": "CID E14", "page": 6, "x": 11.16, "y": 163.18, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE14", "label": "Descrição E14", "page": 6, "x": 26.95, "y": 163.18, "w": 73.2, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD14", "label": "CID D14", "page": 6, "x": 99.8, "y": 163.18, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD14", "label": "Descrição D14", "page": 6, "x": 117.13, "y": 163.18, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE15", "label": "CID E15", "page": 6, "x": 11.16, "y": 167.89, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE15", "label": "Descrição E15", "page": 6, "x": 26.95, "y": 167.89, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD15", "label": "CID D15", "page": 6, "x": 99.8, "y": 167.89, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD15", "label": "Descrição D15", "page": 6, "x": 117.13, "y": 167.89, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "termoCPF", "label": "Termo - CPF", "page": 7, "x": 36.5, "y": 56.27, "w": 61.14, "fs": 13, "type": "text", "when": null, "unit": "mm"}, {"key": "termoMedico", "label": "Termo - Nome do Médico", "page": 7, "x": 55, "y": 68.79, "w": 98.77, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "termoCRM", "label": "Termo - CRM", "page": 7, "x": 38.09, "y": 72.85, "w": 42.33, "fs": 12, "type": "text", "when": null, "unit": "mm"}], "unit": "mm", "pageWidth": 210, "pageHeight": 297}, "intermed": {"operator": "generic", "pages": 7, "fields": [{"key": "vinculo_titular_check", "label": "Vínculo TITULAR", "page": 1, "x": 153.95, "y": 41.8, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "vinculo", "equals": "TITULAR"}, "unit": "mm"}, {"key": "vinculo_dependente_check", "label": "Vínculo DEPENDENTE", "page": 1, "x": 167.9, "y": 41.8, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "vinculo", "equals": "DEPENDENTE"}, "unit": "mm"}, {"key": "nome", "label": "Nome", "page": 1, "x": 30.16, "y": 42.85, "w": 120, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "dataNascimento", "label": "Data de nascimento", "page": 2, "x": 19.45, "y": 46.64, "w": 43.2, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "peso", "label": "Peso", "page": 2, "x": 64.38, "y": 46.64, "w": 66.5, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "altura", "label": "Altura", "page": 2, "x": 132.43, "y": 46.64, "w": 65.6, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "q31_sim_check", "label": "SQ31", "page": 2, "x": 165.6, "y": 102.79, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q31_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q31_nao_check", "label": "NQ31", "page": 2, "x": 184.8, "y": 102.79, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q31_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q31_obs", "label": "Obs Q31", "page": 2, "x": 65, "y": 124.2, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q32_sim_check", "label": "SQ32", "page": 2, "x": 165.6, "y": 127.29, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q32_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q32_nao_check", "label": "NQ32", "page": 2, "x": 184.8, "y": 127.29, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q32_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q32_obs", "label": "Obs Q32", "page": 2, "x": 65, "y": 148.29, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q33_sim_check", "label": "SQ33", "page": 2, "x": 165.6, "y": 151.33, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q33_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q33_nao_check", "label": "NQ33", "page": 2, "x": 184.8, "y": 151.33, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q33_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q33_obs", "label": "Obs Q33", "page": 2, "x": 65, "y": 169.85, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q34_sim_check", "label": "SQ34", "page": 2, "x": 165.6, "y": 172.54, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q34_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q34_nao_check", "label": "NQ34", "page": 2, "x": 184.8, "y": 172.54, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q34_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q34_obs", "label": "Obs Q34", "page": 2, "x": 65, "y": 199.91, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q35_sim_check", "label": "SQ35", "page": 2, "x": 165.6, "y": 202.4, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q35_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q35_nao_check", "label": "NQ35", "page": 2, "x": 184.8, "y": 202.4, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q35_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q35_obs", "label": "Obs Q35", "page": 2, "x": 65, "y": 225.13, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q36_sim_check", "label": "SQ36", "page": 2, "x": 165.6, "y": 227.4, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q36_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q36_nao_check", "label": "NQ36", "page": 2, "x": 184.8, "y": 227.4, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q36_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q36_obs", "label": "Obs Q36", "page": 2, "x": 65, "y": 245.78, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q37_sim_check", "label": "SQ37", "page": 3, "x": 165.6, "y": 23.2, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q37_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q37_nao_check", "label": "NQ37", "page": 3, "x": 185, "y": 23.2, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q37_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q37_obs", "label": "Obs Q37", "page": 3, "x": 65, "y": 44.97, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q38_sim_check", "label": "SQ38", "page": 3, "x": 165.6, "y": 47.92, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q38_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q38_nao_check", "label": "NQ38", "page": 3, "x": 185.5, "y": 47.92, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q38_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q38_obs", "label": "Obs Q38", "page": 3, "x": 65, "y": 66.88, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q39_sim_check", "label": "SQ39", "page": 3, "x": 165.6, "y": 69.83, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q39_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q39_nao_check", "label": "NQ39", "page": 3, "x": 185.5, "y": 69.83, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q39_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q39_obs", "label": "Obs Q39", "page": 3, "x": 65, "y": 87.94, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q310_nao_check", "label": "NQ310", "page": 3, "x": 185.5, "y": 90.4, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q310_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q310_sim_check", "label": "SQ310", "page": 3, "x": 165.6, "y": 90.49, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q310_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q310_obs", "label": "Obs Q310", "page": 3, "x": 65, "y": 112.96, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q311_sim_check", "label": "SQ311", "page": 3, "x": 165.6, "y": 115.89, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q311_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q311_nao_check", "label": "NQ311", "page": 3, "x": 185.5, "y": 115.89, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q311_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q311_obs", "label": "Obs Q311", "page": 3, "x": 65, "y": 143.01, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q312_sim_check", "label": "SQ312", "page": 3, "x": 165.6, "y": 145.48, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q312_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q312_nao_check", "label": "NQ312", "page": 3, "x": 185.5, "y": 145.48, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q312_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q312_obs", "label": "Obs Q312", "page": 3, "x": 65, "y": 168.23, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q313_sim_check", "label": "SQ313", "page": 3, "x": 165.6, "y": 170.57, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q313_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q313_nao_check", "label": "NQ313", "page": 3, "x": 185.5, "y": 170.57, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q313_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q315_olho_esquerdo", "label": "Olho esquerdo", "page": 3, "x": 119.7, "y": 180.85, "w": 23.52, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q315_olho_direito", "label": "Olho direito", "page": 3, "x": 143.42, "y": 180.85, "w": 23.52, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q313_obs", "label": "Obs Q313", "page": 3, "x": 65, "y": 187.86, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q314_sim_check", "label": "SQ314", "page": 3, "x": 165.6, "y": 190.1, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q314_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q314_nao_check", "label": "NQ314", "page": 3, "x": 185.5, "y": 190.1, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q314_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q314_obs", "label": "Obs Q314", "page": 3, "x": 65, "y": 204.8, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q315_sim_check", "label": "SQ315", "page": 3, "x": 165.6, "y": 207.23, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q315_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q315_nao_check", "label": "NQ315", "page": 3, "x": 185.5, "y": 207.23, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q315_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q315_obs", "label": "Obs Q315", "page": 3, "x": 65, "y": 226.93, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q316_sim_check", "label": "SQ316", "page": 3, "x": 165.6, "y": 229.27, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q316_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q316_nao_check", "label": "NQ316", "page": 3, "x": 185.5, "y": 229.27, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q316_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q316_obs", "label": "Obs Q316", "page": 3, "x": 65, "y": 249.17, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q317_sim_check", "label": "SQ317", "page": 4, "x": 165.6, "y": 21.18, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q317_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q317_nao_check", "label": "NQ317", "page": 4, "x": 185.5, "y": 21.18, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q317_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q317_obs", "label": "Obs Q317", "page": 4, "x": 65, "y": 34.42, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q318_sim_check", "label": "SQ318", "page": 4, "x": 165.6, "y": 36.96, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q318_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q318_nao_check", "label": "NQ318", "page": 4, "x": 185.5, "y": 36.96, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "q318_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q318_obs", "label": "Obs Q318", "page": 4, "x": 65, "y": 51.59, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q319_sim_check", "label": "3.19 SIM", "page": 4, "x": 165.6, "y": 54, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q319_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q319_nao_check", "label": "3.19 NÃO", "page": 4, "x": 185.5, "y": 54, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q319_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q319_obs", "label": "3.19 Observação", "page": 4, "x": 65, "y": 64.37, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q320_sim_check", "label": "3.20 SIM", "page": 4, "x": 165.6, "y": 66.7, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q320_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q320_nao_check", "label": "3.20 NÃO", "page": 4, "x": 185.5, "y": 66.7, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q320_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q320_obs", "label": "3.20 Observação", "page": 4, "x": 65, "y": 77.28, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q321_nao_check", "label": "3.21 NÃO", "page": 4, "x": 185.5, "y": 79.8, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q321_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q321_sim_check", "label": "3.21 SIM", "page": 4, "x": 165.6, "y": 80.8, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q321_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q321_obs", "label": "3.21 Observação", "page": 4, "x": 65, "y": 93.28, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q322_sim_check", "label": "3.22 SIM", "page": 4, "x": 165.6, "y": 95.7, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q322_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q322_nao_check", "label": "3.22 NÃO", "page": 4, "x": 185.5, "y": 95.7, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q322_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q322_obs", "label": "3.22 Observação", "page": 4, "x": 65, "y": 104.32, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q323_sim_check", "label": "3.23 SIM", "page": 4, "x": 165.6, "y": 107.2, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q323_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q323_nao_check", "label": "3.23 NÃO", "page": 4, "x": 185.5, "y": 107.2, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q323_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q323_obs", "label": "3.23 Observação", "page": 4, "x": 65, "y": 117.23, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q324_sim_check", "label": "3.24 SIM", "page": 4, "x": 165.6, "y": 120.3, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q324_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q324_nao_check", "label": "3.24 NÃO", "page": 4, "x": 185.5, "y": 120.3, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q324_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q324_obs", "label": "3.24 Observação", "page": 4, "x": 65, "y": 130.14, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "q325_sim_check", "label": "3.25 SIM", "page": 4, "x": 165.6, "y": 132.6, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q325_resposta", "equals": "SIM"}, "unit": "mm"}, {"key": "q325_nao_check", "label": "3.25 NÃO", "page": 4, "x": 185.5, "y": 132.6, "w": 6.58, "fs": 12, "type": "check", "when": {"field": "q325_resposta", "equals": "NÃO"}, "unit": "mm"}, {"key": "q325_obs", "label": "3.25 Observação", "page": 4, "x": 65, "y": 151.01, "w": 134, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "comentarios", "label": "Comentários", "page": 4, "x": 20.99, "y": 176.17, "w": 177, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "medicoNome", "label": "Nome médico", "page": 4, "x": 115.82, "y": 195.98, "w": 82.5, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "medico_unimed_check", "label": "Médico Unimed", "page": 4, "x": 22.16, "y": 200.69, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "medicoOrientadorOpcao", "equals": "Sim, médico da operadora"}, "unit": "mm"}, {"key": "medico_particular_check", "label": "Médico Particular", "page": 4, "x": 22.16, "y": 205.08, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "medicoOrientadorOpcao", "equals": "Sim, médico particular de minha escolha"}, "unit": "mm"}, {"key": "medicoCRM", "label": "CRM", "page": 4, "x": 115.83, "y": 206.5, "w": 41.2, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "medicoData", "label": "Data médico", "page": 4, "x": 160.33, "y": 206.5, "w": 37.6, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "medico_nao_check", "label": "Médico Não", "page": 4, "x": 22.16, "y": 209.68, "w": 6.35, "fs": 12, "type": "check", "when": {"field": "medicoOrientadorOpcao", "equals": "Não"}, "unit": "mm"}, {"key": "medicoAssinatura", "label": "Assinatura médico", "page": 4, "x": 115.9, "y": 217.89, "w": 82, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "local", "label": "Local", "page": 5, "x": 19.72, "y": 111.65, "w": 66.3, "fs": 15, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "responsavelData", "label": "Data local", "page": 5, "x": 88.39, "y": 111.65, "w": 65.4, "fs": 15, "type": "text", "when": null, "unit": "mm"}, {"key": "responsavelNome", "label": "Nome responsável", "page": 5, "x": 29.7, "y": 150.55, "w": 112, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "responsavelCPF", "label": "CPF responsável", "page": 5, "x": 27.3, "y": 154.98, "w": 70.08, "fs": 10, "type": "text", "when": null, "unit": "mm"}, {"key": "termoLocal", "label": "Termo - Local", "page": 6, "x": 54.06, "y": 46.1, "w": 56, "fs": 14, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "termoData", "label": "Termo - Data", "page": 6, "x": 112.38, "y": 46.1, "w": 67.2, "fs": 14, "type": "text", "when": null, "unit": "mm"}, {"key": "termoBeneficiario", "label": "Termo - Beneficiário", "page": 6, "x": 29.68, "y": 66.77, "w": 148, "fs": 12, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "cidE1", "label": "CID E1", "page": 6, "x": 11.16, "y": 106.33, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE1", "label": "Descrição E1", "page": 6, "x": 27.45, "y": 106.33, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD1", "label": "CID D1", "page": 6, "x": 99.8, "y": 106.33, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD1", "label": "Descrição D1", "page": 6, "x": 117.63, "y": 106.33, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE2", "label": "CID E2", "page": 6, "x": 11.16, "y": 110.96, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE2", "label": "Descrição E2", "page": 6, "x": 27.45, "y": 110.96, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD2", "label": "CID D2", "page": 6, "x": 99.8, "y": 110.96, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD2", "label": "Descrição D2", "page": 6, "x": 117.63, "y": 110.96, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE3", "label": "CID E3", "page": 6, "x": 11.16, "y": 115.59, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE3", "label": "Descrição E3", "page": 6, "x": 27.45, "y": 115.59, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD3", "label": "CID D3", "page": 6, "x": 99.8, "y": 115.59, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD3", "label": "Descrição D3", "page": 6, "x": 117.63, "y": 115.59, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE4", "label": "CID E4", "page": 6, "x": 11.16, "y": 120.38, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE4", "label": "Descrição E4", "page": 6, "x": 27.45, "y": 120.38, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD4", "label": "CID D4", "page": 6, "x": 99.8, "y": 120.38, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD4", "label": "Descrição D4", "page": 6, "x": 117.63, "y": 120.38, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE5", "label": "CID E5", "page": 6, "x": 11.16, "y": 125.11, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE5", "label": "Descrição E5", "page": 6, "x": 27.45, "y": 125.11, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD5", "label": "CID D5", "page": 6, "x": 99.8, "y": 125.11, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD5", "label": "Descrição D5", "page": 6, "x": 117.63, "y": 125.11, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE6", "label": "CID E6", "page": 6, "x": 11.16, "y": 129.64, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE6", "label": "Descrição E6", "page": 6, "x": 27.45, "y": 129.64, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD6", "label": "CID D6", "page": 6, "x": 99.8, "y": 129.64, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD6", "label": "Descrição D6", "page": 6, "x": 117.63, "y": 129.64, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE7", "label": "CID E7", "page": 6, "x": 11.16, "y": 134.37, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE7", "label": "Descrição E7", "page": 6, "x": 27.45, "y": 134.37, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD7", "label": "CID D7", "page": 6, "x": 99.8, "y": 134.37, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD7", "label": "Descrição D7", "page": 6, "x": 117.63, "y": 134.37, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE8", "label": "CID E8", "page": 6, "x": 11.16, "y": 139.1, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE8", "label": "Descrição E8", "page": 6, "x": 27.45, "y": 139.1, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD8", "label": "CID D8", "page": 6, "x": 99.8, "y": 139.1, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD8", "label": "Descrição D8", "page": 6, "x": 117.63, "y": 139.1, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE9", "label": "CID E9", "page": 6, "x": 11.16, "y": 143.83, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE9", "label": "Descrição E9", "page": 6, "x": 27.45, "y": 143.83, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD9", "label": "CID D9", "page": 6, "x": 99.8, "y": 143.83, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD9", "label": "Descrição D9", "page": 6, "x": 117.63, "y": 143.83, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE10", "label": "CID E10", "page": 6, "x": 11.16, "y": 148.56, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE10", "label": "Descrição E10", "page": 6, "x": 27.45, "y": 148.56, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD10", "label": "CID D10", "page": 6, "x": 99.8, "y": 148.56, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD10", "label": "Descrição D10", "page": 6, "x": 117.63, "y": 148.56, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE11", "label": "CID E11", "page": 6, "x": 11.16, "y": 153.39, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE11", "label": "Descrição E11", "page": 6, "x": 27.45, "y": 153.39, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD11", "label": "CID D11", "page": 6, "x": 99.8, "y": 153.39, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD11", "label": "Descrição D11", "page": 6, "x": 117.63, "y": 153.39, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE12", "label": "CID E12", "page": 6, "x": 11.16, "y": 158.12, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "cidD12", "label": "CID D12", "page": 6, "x": 99.8, "y": 158.12, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD12", "label": "Descrição D12", "page": 6, "x": 117.63, "y": 158.12, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "descE12", "label": "Descrição E12", "page": 6, "x": 27.45, "y": 158.38, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE13", "label": "CID E13", "page": 6, "x": 11.16, "y": 162.85, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE13", "label": "Descrição E13", "page": 6, "x": 27.45, "y": 162.85, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD13", "label": "CID D13", "page": 6, "x": 99.8, "y": 162.85, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD13", "label": "Descrição D13", "page": 6, "x": 117.63, "y": 162.85, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE14", "label": "CID E14", "page": 6, "x": 11.16, "y": 167.18, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descE14", "label": "Descrição E14", "page": 6, "x": 27.45, "y": 167.18, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidD14", "label": "CID D14", "page": 6, "x": 99.8, "y": 167.18, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD14", "label": "Descrição D14", "page": 6, "x": 117.63, "y": 167.18, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "cidE15", "label": "CID E15", "page": 6, "x": 11.16, "y": 171.89, "w": 15.4, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "cidD15", "label": "CID D15", "page": 6, "x": 99.8, "y": 171.89, "w": 16.6, "fs": 10, "type": "text", "when": null, "align": "center", "unit": "mm"}, {"key": "descD15", "label": "Descrição D15", "page": 6, "x": 117.63, "y": 171.89, "w": 82, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "descE15", "label": "Descrição E15", "page": 6, "x": 27.95, "y": 172.39, "w": 73.2, "fs": 11, "type": "text", "when": null, "unit": "mm"}, {"key": "termoCPF", "label": "Termo - CPF", "page": 7, "x": 37, "y": 60.27, "w": 61.14, "fs": 13, "type": "text", "when": null, "unit": "mm"}, {"key": "termoMedico", "label": "Termo - Nome do Médico", "page": 7, "x": 55.5, "y": 72.29, "w": 98.77, "fs": 12, "type": "text", "when": null, "unit": "mm"}, {"key": "termoCRM", "label": "Termo - CRM", "page": 7, "x": 38.59, "y": 76.85, "w": 42.33, "fs": 12, "type": "text", "when": null, "unit": "mm"}], "unit": "mm", "pageWidth": 210, "pageHeight": 297}};
-const OVERLAY_SCHEMA = OVERLAY_SCHEMAS.unimed;
-const SCHEMA_PAGE_WIDTH = 210;
-const SCHEMA_PAGE_HEIGHT = 297;
-function esc(v) {
-  return String(v||'').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
-}
-function t(v) { return esc(v || ''); }
-function check(v) { return v ? '✔' : ''; }
-
-function normalizeValue(v) {
-  return String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toUpperCase();
-}
-function getValueByAliases(data, keys) {
-  for(const key of keys) {
-    if(Object.prototype.hasOwnProperty.call(data, key) && data[key] !== undefined && data[key] !== null && String(data[key]) !== '') {
-      return data[key];
-    }
-  }
-  return '';
-}
-function getFieldDisplayValue(field, data) {
-  if(field.type === 'check') {
-    if(field.when && field.when.field) {
-      const current = normalizeValue(getValueByAliases(data, [field.when.field]));
-      const expected = normalizeValue(field.when.equals);
-      return check(current === expected);
-    }
-    return '';
-  }
-  let raw = '';
-  if(field.key === 'responsavelData') {
-    raw = getValueByAliases(data, ['responsavelData','dataLocal']);
-  } else {
-    raw = getValueByAliases(data, [field.key]);
-  }
-  return t(String(raw || '').toUpperCase());
-}
 
 
-function readFrameFormData(frame) {
-  try {
-    const doc = frame && frame.contentDocument;
-    if(!doc) return null;
-    const data = {};
-    doc.querySelectorAll('input,select,textarea').forEach(el => {
-      if(!el.name) return;
-      if(el.type === 'radio') {
-        if(el.checked) data[el.name] = el.value;
-      } else {
-        data[el.name] = el.value || '';
-      }
-    });
-    return data;
-  } catch(e) {
-    return null;
-  }
-}
 
-async function syncAllFrameData(op) {
-  const waiters = [];
-  for(let i=1;i<=state.counts[op];i++) {
-    const frame = document.getElementById(`frame-${op}-${i}`);
-    if(!frame) continue;
-
-    // tentativa imediata de leitura direta do DOM do iframe
-    const immediate = readFrameFormData(frame);
-    if(immediate) {
-      sessionStorage.setItem(storageKey(op, i), JSON.stringify(immediate));
-    }
-
-    // pede ao iframe para persistir o estado atual antes da visualização
-    waiters.push(new Promise(resolve => {
-      let done = false;
-      const finish = () => {
-        if(done) return;
-        done = true;
-        window.removeEventListener('message', onMsg);
-        const latest = readFrameFormData(frame);
-        if(latest) sessionStorage.setItem(storageKey(op, i), JSON.stringify(latest));
-        resolve();
-      };
-      const onMsg = (ev) => {
-        if(ev.data?.type === 'ds-sync-done' && ev.data.operator === op && String(ev.data.instanceId) === String(i)) {
-          finish();
-        }
-      };
-      window.addEventListener('message', onMsg);
-      try {
-        frame.contentWindow.postMessage({type:'ds-request-sync', operator:op, instanceId:i}, '*');
-      } catch(e) {}
-      setTimeout(finish, 180);
-    }));
-  }
-  await Promise.all(waiters);
-  refreshTabIndicators(op);
-}
-
-function fieldStyle(field) {
-  const left = Number(field.x) || 0;
-  const top = Number(field.y) || 0;
-  const width = Number(field.w) || 0;
-  const base = [
-    `left:${left}mm`,
-    `top:${top}mm`,
-    `width:${width}mm`,
-    `font-size:${Number(field.fs)||11}px`,
-    'font-weight:700'
-  ];
-  if(field.align) base.push(`text-align:${field.align}`);
-  if(field.type === 'check') base.push(
-    'text-align:center',
-    'display:flex',
-    'align-items:center',
-    'justify-content:center',
-    'height:24px',
-    'font-weight:900',
-    'line-height:1.15'
-  );
-  return base.join(';');
-}
-
-function schemaForOperator(op) {
-  return (OVERLAY_SCHEMAS && OVERLAY_SCHEMAS[op]) || OVERLAY_SCHEMA;
-}
-
-function dataPages(op, data) {
-  const bg = PDF_PAGES[op];
-  const schema = schemaForOperator(op);
-  const pages = [];
-  for(let page=1; page<=schema.pages; page++) {
-    const fields = schema.fields.filter(f => Number(f.page) === page);
-    const html = fields.map(field => `<div class="fill${field.type === 'check' ? ' check center' : ''}" style="${fieldStyle(field)}">${getFieldDisplayValue(field, data)}</div>`).join('');
-    pages.push(`<div class="pdf-page"><img class="pdf-bg" src="${bg[page-1]}"><div class="overlay">${html}</div></div>`);
-  }
-  return pages;
-}
-
-
-async function visualize(op) {
-  await syncAllFrameData(op);
-  const docs = [];
-  for(let i=1;i<=state.counts[op];i++) {
-    const d = readStored(op,i) || {};
-    docs.push({ instance:i, data:d });
-  }
-  const win = window.open('', '_blank');
-  const title = `${META[op].badge} - Visualização`;
-  let body = docs.map((doc, idx) => `<div class="doc-block">${dataPages(op, doc.data).join('')}</div>`).join('');
-  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${title}</title><style>${document.querySelector('style').textContent}
-
-html,body{height:auto !important;overflow:auto !important}
-body.preview-body{background:#d8dde6 !important;margin:0 !important}
-.preview-wrap{padding:14px 0 40px;overflow:visible !important}
-.doc-block{margin:0 0 14px 0;padding:0}
-.app,.sidebar,.content,.main-panel,.workspace,.tabs-content,.tab-pane{height:auto !important;overflow:visible !important}
-
-
-.sidebar-operator-card{transition:all .18s ease}
-.sidebar-operator-card.is-active{border-color:#93c5fd;box-shadow:0 12px 30px rgba(37,99,235,.12)}
-.sidebar-operator-card.is-inactive{opacity:.96}
-</style></head><body class="preview-body"><div class="preview-wrap">${body}</div></body></html>`);
-  win.document.close();
-}
-
-function renderAll() {
-  buildWorkspace('unimed');
-  buildWorkspace('intermed');
-  showPanel(state.activePanel || 'unimed');
-  updateSidebarSelection();
-}
-renderAll();
-</script>
-</body>
+<script defer="defer" src="lib/pdf-lib.min.js"></script><script defer="defer" src="pdf_templates.js"></script><script defer="defer" src="pdf_positions.js"></script><script defer="defer" src="app.js"></script></body>
 </html>
