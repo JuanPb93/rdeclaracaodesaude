@@ -254,6 +254,209 @@ async function syncAllFrameData(op) {
   refreshTabIndicators(op);
 }
 
+function normalizeValidationResult(result, op, id) {
+  const errors = Array.isArray(result && result.errors) ? result.errors : [];
+  return {
+    operator: op,
+    instanceId: id,
+    valid: !!(result && result.valid) && errors.length === 0,
+    errors
+  };
+}
+
+function requestFrameValidation(frame, op, id) {
+  return new Promise(resolve => {
+    if(!frame) {
+      resolve({operator:op, instanceId:id, valid:false, errors:[{label:'Instância não encontrada para validação.'}]});
+      return;
+    }
+    try {
+      const cw = frame.contentWindow;
+      if(cw && typeof cw.validateDeclarationForm === 'function') {
+        resolve(normalizeValidationResult(cw.validateDeclarationForm({mark:true}), op, id));
+        return;
+      }
+    } catch(e) {}
+
+    let done = false;
+    const finish = (result) => {
+      if(done) return;
+      done = true;
+      window.removeEventListener('message', onMsg);
+      resolve(normalizeValidationResult(result, op, id));
+    };
+    const onMsg = (ev) => {
+      if(ev.data && ev.data.type === 'ds-validation-result' && ev.data.operator === op && String(ev.data.instanceId) === String(id)) {
+        finish(ev.data);
+      }
+    };
+    window.addEventListener('message', onMsg);
+    try {
+      frame.contentWindow.postMessage({type:'ds-request-validation', operator:op, instanceId:id}, '*');
+    } catch(e) {}
+    setTimeout(() => finish({valid:false, errors:[{label:'Não foi possível validar esta instância. Recarregue a página e tente novamente.'}]}), 800);
+  });
+}
+
+async function validateOperatorForms(op) {
+  const results = [];
+  for(let i=1;i<=state.counts[op];i++) {
+    const frame = document.getElementById(`frame-${op}-${i}`);
+    results.push(await requestFrameValidation(frame, op, i));
+  }
+  return {
+    valid: results.every(r => r.valid),
+    results
+  };
+}
+
+function ensureValidationModalStyles() {
+  if(document.getElementById('rds-validation-modal-style')) return;
+  const style = document.createElement('style');
+  style.id = 'rds-validation-modal-style';
+  style.textContent = `
+    .rds-modal-overlay{position:fixed;inset:0;z-index:9999;background:rgba(226,232,240,.72);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:24px}
+    .rds-modal-card{width:min(860px,100%);max-height:min(760px,calc(100vh - 48px));background:#ffffff;border:1px solid #d7e2ef;border-radius:22px;box-shadow:0 24px 70px rgba(15,23,42,.22);display:flex;flex-direction:column;overflow:hidden;color:#0f172a}
+    .rds-modal-head{padding:20px 24px 14px 24px;border-bottom:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)}
+    .rds-modal-title-row{display:flex;align-items:center;gap:12px}
+    .rds-modal-icon{width:38px;height:38px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-weight:900;font-size:20px;flex:0 0 auto}
+    .rds-modal-head h2{margin:0;font-size:20px;line-height:1.2;color:#0f172a}
+    .rds-modal-head p{margin:6px 0 0 50px;color:#64748b;font-size:14px;line-height:1.45}
+    .rds-modal-body{padding:18px 24px;overflow:auto;background:#f8fbff}
+    .rds-modal-summary{margin:0 0 14px 0;color:#334155;font-size:14px;line-height:1.45}
+    .rds-modal-section{background:#ffffff;border:1px solid #d7e2ef;border-radius:16px;padding:14px 16px;margin:0 0 12px 0;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+    .rds-modal-section.unimed{border-left:5px solid #16a34a}
+    .rds-modal-section.intermed{border-left:5px solid #ea580c}
+    .rds-modal-section h3{margin:0 0 10px 0;font-size:15px;line-height:1.25;color:#0f172a;display:flex;align-items:center;gap:8px}
+    .rds-modal-section h3 span{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}
+    .rds-modal-section.unimed h3 span{background:#ecfdf5;color:#15803d}
+    .rds-modal-section.intermed h3 span{background:#fff7ed;color:#c2410c}
+    .rds-modal-list{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+    .rds-modal-list li{position:relative;padding-left:18px;color:#334155;font-size:14px;line-height:1.35}
+    .rds-modal-list li::before{content:'•';position:absolute;left:0;top:0;color:#dc2626;font-weight:900}
+    .rds-modal-footer{padding:14px 24px 18px 24px;border-top:1px solid #e2e8f0;background:#ffffff;display:flex;justify-content:flex-end;gap:10px}
+    .rds-modal-close{border:none;border-radius:14px;background:#2563eb;color:#ffffff;font-weight:800;padding:12px 22px;min-width:118px;box-shadow:0 8px 18px rgba(37,99,235,.20)}
+    .rds-modal-close:hover{filter:brightness(.96)}
+    .rds-modal-close:focus{outline:3px solid rgba(37,99,235,.25);outline-offset:2px}
+    @media (max-width:640px){.rds-modal-overlay{padding:12px;align-items:flex-start}.rds-modal-card{max-height:calc(100vh - 24px);border-radius:18px}.rds-modal-head,.rds-modal-body,.rds-modal-footer{padding-left:16px;padding-right:16px}.rds-modal-head p{margin-left:0;margin-top:10px}}
+  `;
+  document.head.appendChild(style);
+}
+
+function closeValidationModal() {
+  const overlay = document.getElementById('rds-validation-modal');
+  if(!overlay) return;
+  const previousFocusId = overlay.getAttribute('data-previous-focus');
+  overlay.remove();
+  document.removeEventListener('keydown', handleValidationModalKeydown);
+  if(previousFocusId) {
+    const previous = document.getElementById(previousFocusId);
+    if(previous && typeof previous.focus === 'function') previous.focus();
+  }
+}
+
+function handleValidationModalKeydown(ev) {
+  if(ev.key === 'Escape') closeValidationModal();
+}
+
+function showValidationPopup(op, validation) {
+  const invalidResults = (validation.results || []).filter(r => !r.valid && Array.isArray(r.errors) && r.errors.length);
+  ensureValidationModalStyles();
+  closeValidationModal();
+
+  const badge = META[op].badge;
+  const totalPendencias = invalidResults.reduce((sum, result) => sum + result.errors.length, 0);
+  const activeButton = document.activeElement && document.activeElement.id ? document.activeElement.id : '';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'rds-validation-modal';
+  overlay.className = 'rds-modal-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'rds-validation-title');
+  if(activeButton) overlay.setAttribute('data-previous-focus', activeButton);
+
+  const card = document.createElement('div');
+  card.className = 'rds-modal-card';
+  card.addEventListener('click', ev => ev.stopPropagation());
+
+  const head = document.createElement('div');
+  head.className = 'rds-modal-head';
+
+  const titleRow = document.createElement('div');
+  titleRow.className = 'rds-modal-title-row';
+
+  const icon = document.createElement('span');
+  icon.className = 'rds-modal-icon';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = '!';
+
+  const title = document.createElement('h2');
+  title.id = 'rds-validation-title';
+  title.textContent = 'Campos obrigatórios pendentes';
+
+  titleRow.appendChild(icon);
+  titleRow.appendChild(title);
+
+  const subtitle = document.createElement('p');
+  subtitle.textContent = `Não foi possível visualizar ${badge}. Preencha os itens abaixo e tente novamente.`;
+
+  head.appendChild(titleRow);
+  head.appendChild(subtitle);
+
+  const body = document.createElement('div');
+  body.className = 'rds-modal-body';
+
+  const summary = document.createElement('p');
+  summary.className = 'rds-modal-summary';
+  summary.textContent = totalPendencias === 1
+    ? 'Foi encontrada 1 pendência nesta declaração.'
+    : `Foram encontradas ${totalPendencias} pendências nesta declaração.`;
+  body.appendChild(summary);
+
+  invalidResults.forEach(result => {
+    const section = document.createElement('section');
+    section.className = `rds-modal-section ${op}`;
+
+    const h3 = document.createElement('h3');
+    const tag = document.createElement('span');
+    tag.textContent = badge;
+    const headingText = document.createTextNode(`Instância ${result.instanceId}`);
+    h3.appendChild(tag);
+    h3.appendChild(headingText);
+
+    const ul = document.createElement('ul');
+    ul.className = 'rds-modal-list';
+    result.errors.forEach(err => {
+      const li = document.createElement('li');
+      li.textContent = err.label || String(err || 'Campo obrigatório pendente.');
+      ul.appendChild(li);
+    });
+
+    section.appendChild(h3);
+    section.appendChild(ul);
+    body.appendChild(section);
+  });
+
+  const footer = document.createElement('div');
+  footer.className = 'rds-modal-footer';
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'rds-modal-close';
+  closeBtn.textContent = 'ENTENDI';
+  closeBtn.addEventListener('click', closeValidationModal);
+  footer.appendChild(closeBtn);
+
+  card.appendChild(head);
+  card.appendChild(body);
+  card.appendChild(footer);
+  overlay.appendChild(card);
+  overlay.addEventListener('click', closeValidationModal);
+  document.body.appendChild(overlay);
+  document.addEventListener('keydown', handleValidationModalKeydown);
+  closeBtn.focus();
+}
+
 
 const PDF_FONT_SCALE = 0.75;
 const PDF_LINE_HEIGHT = 1.14;
@@ -439,8 +642,8 @@ async function buildFilledPdfBytes(op, docs) {
   }
 
   outDoc.setTitle(`${META[op].badge} - Declaração de Saúde`);
-  outDoc.setProducer('R-Declaracao Saude v2.8');
-  outDoc.setCreator('R-Declaracao Saude v2.8');
+  outDoc.setProducer('R-Declaracao Saude v3.2');
+  outDoc.setCreator('R-Declaracao Saude v3.2');
   return await outDoc.save();
 }
 
@@ -449,17 +652,29 @@ async function visualize(op) {
     updateSidebarSelection();
     return;
   }
+
   const win = window.open('', '_blank');
   if(!win) {
     alert('O navegador bloqueou a nova aba. Libere pop-ups para visualizar o PDF.');
     return;
   }
   const title = `${META[op].badge} - Visualização`;
-  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${title}</title><style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f1f5f9;color:#0f172a;display:flex;align-items:center;justify-content:center;height:100vh}.box{background:#fff;border:1px solid #d7e2ef;border-radius:18px;padding:24px 28px;box-shadow:0 10px 28px rgba(15,23,42,.10);font-weight:700}</style></head><body><div class="box">Gerando PDF real...</div></body></html>`);
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${title}</title><style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f1f5f9;color:#0f172a;display:flex;align-items:center;justify-content:center;height:100vh}.box{background:#fff;border:1px solid #d7e2ef;border-radius:18px;padding:24px 28px;box-shadow:0 10px 28px rgba(15,23,42,.10);font-weight:700}</style></head><body><div class="box">Validando campos obrigatórios...</div></body></html>`);
   win.document.close();
 
   try {
     await syncAllFrameData(op);
+    const validation = await validateOperatorForms(op);
+    if(!validation.valid) {
+      try { win.close(); } catch(e) {}
+      showValidationPopup(op, validation);
+      return;
+    }
+
+    win.document.open();
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${title}</title><style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f1f5f9;color:#0f172a;display:flex;align-items:center;justify-content:center;height:100vh}.box{background:#fff;border:1px solid #d7e2ef;border-radius:18px;padding:24px 28px;box-shadow:0 10px 28px rgba(15,23,42,.10);font-weight:700}</style></head><body><div class="box">Gerando PDF real...</div></body></html>`);
+    win.document.close();
+
     const docs = [];
     for(let i=1;i<=state.counts[op];i++) {
       const d = readStored(op,i) || {};
@@ -477,6 +692,7 @@ async function visualize(op) {
     win.document.close();
   }
 }
+
 
 let __rdsBooted = false;
 
@@ -515,6 +731,7 @@ Object.assign(window, {
   clearInstance,
   setActiveTab,
   syncAllFrameData,
+  validateOperatorForms,
   buildFilledPdfBytes,
   schemaForOperator
 });
